@@ -14,8 +14,8 @@ class CommentFixtures extends Fixture implements DependentFixtureInterface
 {
     public function load(ObjectManager $manager): void
     {
-        $user = $this->getReference('user1');
-        $post = $this->getReference('post1');
+        $user = $this->getReference('user1', User::class);
+        $post = $this->getReference('post1', Post::class);
 
         $comment = new Comment();
         $comment->setBody('This is a comment.')

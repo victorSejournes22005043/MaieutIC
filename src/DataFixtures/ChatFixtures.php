@@ -13,8 +13,8 @@ class ChatFixtures extends Fixture implements DependentFixtureInterface
 {
     public function load(ObjectManager $manager): void
     {
-        $chatBox = $this->getReference('chatBox1');
-        $user = $this->getReference('user1');
+        $chatBox = $this->getReference('chatBox1', ChatBox::class);
+        $user = $this->getReference('user1', User::class);
 
         $chat = new Chat();
         $chat->setUser($user)

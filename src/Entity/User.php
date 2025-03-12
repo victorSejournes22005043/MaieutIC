@@ -42,8 +42,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\JoinTable(name: 'Subscription')]
     private Collection $subscribedPosts;
 
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Like::class)]
-    private Collection $likes;
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: UserLike::class)]
+    private Collection $user_likes;
 
     /**
      * @var list<string> The user roles
@@ -60,7 +60,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function __construct()
     {
         $this->subscribedPosts = new ArrayCollection();
-        $this->likes = new ArrayCollection();
+        $this->user_likes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -107,6 +107,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->roles = $roles;
 
         return $this;
+    }
+
+    /**
+     * Check if the user has a specific role.
+     *
+     * @param string $role
+     * @return bool
+     */
+    public function hasRole(string $role): bool
+    {
+        return in_array($role, $this->getRoles());
     }
 
     /**
@@ -217,27 +228,27 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getLikes(): Collection
+    public function getUserLikes(): Collection
     {
-        return $this->likes;
+        return $this->user_likes;
     }
 
-    public function addLike(Like $like): static
+    public function addUserLike(UserLike $user_like): static
     {
-        if (!$this->likes->contains($like)) {
-            $this->likes->add($like);
-            $like->setUser($this);
+        if (!$this->user_likes->contains($user_like)) {
+            $this->user_likes->add($user_like);
+            $user_like->setUser($this);
         }
 
         return $this;
     }
 
-    public function removeLike(Like $like): static
+    public function removeUserLike(UserLike $user_like): static
     {
-        if ($this->likes->removeElement($like)) {
+        if ($this->user_likes->removeElement($user_like)) {
             // set the owning side to null (unless already changed)
-            if ($like->getUser() === $this) {
-                $like->setUser(null);
+            if ($user_like->getUser() === $this) {
+                $user_like->setUser(null);
             }
         }
 

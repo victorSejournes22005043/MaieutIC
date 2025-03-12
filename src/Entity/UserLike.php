@@ -6,18 +6,18 @@ use App\Repository\LikeRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: LikeRepository::class)]
-class Like
+class UserLike
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'likes')]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'user_likes')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
-    #[ORM\ManyToOne(targetEntity: Comment::class, inversedBy: 'likes')]
+    #[ORM\ManyToOne(targetEntity: Comment::class, inversedBy: 'user_likes')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Comment $comment = null;
 

@@ -30,12 +30,12 @@ class Comment
     #[ORM\JoinColumn(nullable: false)]
     private ?Post $PostId = null;
 
-    #[ORM\OneToMany(mappedBy: 'comment', targetEntity: Like::class)]
-    private Collection $likes;
+    #[ORM\OneToMany(mappedBy: 'comment', targetEntity: UserLike::class)]
+    private Collection $user_likes;
 
     public function __construct()
     {
-        $this->likes = new ArrayCollection();
+        $this->user_likes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -91,27 +91,27 @@ class Comment
         return $this;
     }
 
-    public function getLikes(): Collection
+    public function getUserLikes(): Collection
     {
-        return $this->likes;
+        return $this->user_likes;
     }
 
-    public function addLike(Like $like): static
+    public function addUserLike(UserLike $user_like): static
     {
-        if (!$this->likes->contains($like)) {
-            $this->likes->add($like);
-            $like->setComment($this);
+        if (!$this->user_likes->contains($user_like)) {
+            $this->user_likes->add($user_like);
+            $user_like->setComment($this);
         }
 
         return $this;
     }
 
-    public function removeLike(Like $like): static
+    public function removeUserLike(UserLike $user_like): static
     {
-        if ($this->likes->removeElement($like)) {
+        if ($this->user_likes->removeElement($user_like)) {
             // set the owning side to null (unless already changed)
-            if ($like->getComment() === $this) {
-                $like->setComment(null);
+            if ($user_like->getComment() === $this) {
+                $user_like->setComment(null);
             }
         }
 

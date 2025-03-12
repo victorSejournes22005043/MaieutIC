@@ -14,11 +14,11 @@ class PostFixtures extends Fixture implements DependentFixtureInterface
 {
     public function load(ObjectManager $manager): void
     {
-        $user = $this->getReference('user1');
+        $user = $this->getReference('user1', User::class);
         $tag = new Tag();
         $tag->setName('Tag1');
 
-        $forum = $this->getReference('forum1');
+        $forum = $this->getReference('forum1', Forum::class);
 
         $post = new Post();
         $post->setTitle('Post Title')
@@ -41,6 +41,7 @@ class PostFixtures extends Fixture implements DependentFixtureInterface
     public function getDependencies(): array
     {
         return [
+            UserFixtures::class,
             ForumFixtures::class,
         ];
     }

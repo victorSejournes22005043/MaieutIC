@@ -2,29 +2,36 @@
 
 namespace App\DataFixtures;
 
-use App\Entity\Like;
+use App\Entity\User;
+use App\Entity\UserLike;
 use App\Entity\Comment;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
+use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 
-class LikeFixtures extends Fixture
+class LikeFixtures extends Fixture implements DependentFixtureInterface
 {
     public function load(ObjectManager $manager): void
     {
-        $user = $this->getReference('user1');
+        $user = $this->getReference('user1', User::class);
 
-        $comment = new Comment();
-        $comment->setBody('This is a comment.')
-                ->setCreationDate(new \DateTime())
-                ->setUserId($user);
+        $comment = $this->getReference('comment1', Comment::class);
 
-        $like = new Like();
-        $like->setUser($user)
+        $userLike = new UserLike();
+        $userLike->setUser($user)
              ->setComment($comment)
              ->setIsLike(true);
 
         $manager->persist($comment);
-        $manager->persist($like);
+        $manager->persist($userLike);
         $manager->flush();
+    }
+
+    public function getDependencies(): array
+    {
+        return [
+            UserFixtures::class,
+            CommentFixtures::class,
+        ];
     }
 }
