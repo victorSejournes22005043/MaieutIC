@@ -7,6 +7,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_ID', fields: ['id'])]
@@ -36,6 +38,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $mygoals = null;
 
+    #[ORM\ManyToMany(targetEntity: Post::class, inversedBy: 'subscribedUsers')]
+    #[ORM\JoinTable(name: 'Subscription')]
+    private Collection $subscribedPosts;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Like::class)]
+    private Collection $likes;
+
     /**
      * @var list<string> The user roles
      */
@@ -47,6 +56,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[ORM\Column]
     private ?string $password = null;
+
+    public function __construct()
+    {
+        $this->subscribedPosts = new ArrayCollection();
+        $this->likes = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -177,6 +192,54 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setMygoals(?string $mygoals): static
     {
         $this->mygoals = $mygoals;
+
+        return $this;
+    }
+
+    public function getSubscribedPosts(): Collection
+    {
+        return $this->subscribedPosts;
+    }
+
+    public function addSubscribedPost(Post $Post): static
+    {
+        if (!$this->subscribedPosts->contains($Post)) {
+            $this->subscribedPosts->add($Post);
+        }
+
+        return $this;
+    }
+
+    public function removeSubscribedPost(Post $Post): static
+    {
+        $this->subscribedPosts->removeElement($Post);
+
+        return $this;
+    }
+
+    public function getLikes(): Collection
+    {
+        return $this->likes;
+    }
+
+    public function addLike(Like $like): static
+    {
+        if (!$this->likes->contains($like)) {
+            $this->likes->add($like);
+            $like->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLike(Like $like): static
+    {
+        if ($this->likes->removeElement($like)) {
+            // set the owning side to null (unless already changed)
+            if ($like->getUser() === $this) {
+                $like->setUser(null);
+            }
+        }
 
         return $this;
     }
