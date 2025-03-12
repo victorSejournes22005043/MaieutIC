@@ -8,13 +8,7 @@
     .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
 </style>
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
+<button onclick="window.location.href='{{ path('app_redirection', {page: "register"}) }}'" class="btn btn-primary">S'inscrire</button>
+<button onclick="window.location.href='{{ path('app_login', {page: "login"}) }}'" class="btn btn-primary">Se connecter</button>
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>D:/Users/User/Documents/Etudes/BUT info/3eme année/stage/MaieutIC/src/Controller/HomeController.php</code></li>
-        <li>Your template at <code>D:/Users/User/Documents/Etudes/BUT info/3eme année/stage/MaieutIC/templates/home/index.html.twig</code></li>
-    </ul>
-</div>
 {% endblock %}
