@@ -17,6 +17,7 @@ final class HomeController extends AbstractController{
         ]);
     }
 
+    // Redirect to the correct route according to the {page} parametre
     #[Route('/redirection/{page}', name: 'app_redirection')]
     public function redirection(Request $request): RedirectResponse
     {
