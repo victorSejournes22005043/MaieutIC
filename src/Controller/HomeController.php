@@ -16,21 +16,4 @@ final class HomeController extends AbstractController{
             'controller_name' => 'HomeController',
         ]);
     }
-
-    // Redirect to the correct route according to the {page} parametre
-    #[Route('/redirection/{page}', name: 'app_redirection')]
-    public function redirection(Request $request): RedirectResponse
-    {
-        switch($request->attributes->get('page'))
-        {
-            case "register":
-                return $this->redirectToRoute('app_register');
-                break;
-            
-            case "login":
-                return $this->redirectToRoute('app_login');
-                break;
-        }
-        
-    }
 }
