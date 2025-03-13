@@ -1,0 +1,15 @@
+{# filepath: c:\Users\Nathalie\Desktop\MaieutIC\templates\forum\forums.html.twig #}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Forums</title>
+</head>
+<body>
+    <h1>Forums</h1>
+    <ul>
+        {% for forum in forums %}
+            <li><a href="{{ path('posts', { 'forum_id': forum.id }) }}">{{ forum.name }}</a></li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

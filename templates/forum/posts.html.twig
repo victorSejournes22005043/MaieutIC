@@ -1,0 +1,17 @@
+{# filepath: c:\Users\Nathalie\Desktop\MaieutIC\templates\forum\posts.html.twig #}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ forum.name }} - Posts</title>
+</head>
+<body>
+    <h1>{{ forum.name }} - Posts</h1>
+    <ul>
+        {% for post in posts %}
+            {% if post.forum.id == forum.id %}
+                <li>{{ post.title }}</li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+</body>
+</html>
