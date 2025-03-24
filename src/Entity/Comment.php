@@ -16,7 +16,7 @@ class Comment
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 1000)]
+    #[ORM\Column(type: 'string', length: 5000)]
     private ?string $body = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
@@ -28,7 +28,7 @@ class Comment
 
     #[ORM\ManyToOne(targetEntity: Post::class)]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Post $PostId = null;
+    private ?Post $postId = null;
 
     #[ORM\OneToMany(mappedBy: 'comment', targetEntity: UserLike::class)]
     private Collection $user_likes;
@@ -67,26 +67,26 @@ class Comment
         return $this;
     }
 
-    public function getUserId(): ?User
+    public function getUser(): ?User
     {
-        return $this->userId;
+        return $this->user;
     }
 
-    public function setUserId(User $userId): static
+    public function setUser(User $user): static
     {
-        $this->userId = $userId;
+        $this->user = $user;
 
         return $this;
     }
 
-    public function getPostId(): ?Post
+    public function getPost(): ?Post
     {
-        return $this->PostId;
+        return $this->post;
     }
 
-    public function setPostId(Post $PostId): static
+    public function setPost(Post $post): static
     {
-        $this->PostId = $PostId;
+        $this->post = $post;
 
         return $this;
     }
@@ -114,6 +114,30 @@ class Comment
                 $user_like->setComment(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getUserId(): ?User
+    {
+        return $this->userId;
+    }
+
+    public function setUserId(User $userId): static
+    {
+        $this->userId = $userId;
+
+        return $this;
+    }
+
+    public function getPostId(): ?Post
+    {
+        return $this->postId;
+    }
+
+    public function setPostId(Post $postId): static
+    {
+        $this->postId = $postId;
 
         return $this;
     }

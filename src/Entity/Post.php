@@ -8,7 +8,6 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Entity\User;
-use App\Entity\Tag;
 use App\Entity\Forum;
 
 #[ORM\Entity(repositoryClass: PostRepository::class)]
@@ -20,14 +19,18 @@ class Post
     private ?int $id = null;
 
     #[ORM\Column(length: 100)]
-    private ?string $title = null;
+    private ?string $name = null;
 
-    #[ORM\Column(length: 1000)]
-    private ?string $body = null;
+    #[ORM\Column(length: 5000)]
+    private ?string $description = null;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
-    private ?User $user = null;
+    private ?User $userId = null;
+
+    #[ORM\ManyToOne(targetEntity: Forum::class, inversedBy: 'posts')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Forum $forumId = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTimeInterface $creationDate = null;
@@ -36,23 +39,18 @@ class Post
     private ?\DateTimeInterface $lastActivity = null;
 
     #[ORM\Column]
-    private ?int $nbComments = null;
-
-    #[ORM\ManyToMany(targetEntity: Tag::class, inversedBy: 'Posts')]
-    #[ORM\JoinTable(name: 'Post_tag')]
-    private Collection $tags;
+    private ?int $members = null;
 
     #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'subscribedPosts')]
     private Collection $subscribedUsers;
 
-    #[ORM\ManyToOne(targetEntity: Forum::class, inversedBy: 'posts')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Forum $forum = null;
+    #[ORM\OneToMany(mappedBy: 'postId', targetEntity: Comment::class)]
+    private Collection $comments;
 
     public function __construct()
     {
-        $this->tags = new ArrayCollection();
         $this->subscribedUsers = new ArrayCollection();
+        $this->comments = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -67,38 +65,50 @@ class Post
         return $this;
     }
 
-    public function getTitle(): ?string
+    public function getName(): ?string
     {
-        return $this->title;
+        return $this->name;
     }
 
-    public function setTitle(string $title): static
+    public function setName(string $name): static
     {
-        $this->title = $title;
+        $this->name = name;
 
         return $this;
     }
 
-    public function getBody(): ?string
+    public function getDescription(): ?string
     {
-        return $this->body;
+        return $this->description;
     }
 
-    public function setBody(string $body): static
+    public function setDescription(string $description): static
     {
-        $this->body = $body;
+        $this->description = $description;
 
         return $this;
     }
 
-    public function getUser(): ?User
+    public function getUserId(): ?User
     {
-        return $this->user;
+        return $this->userId;
     }
 
-    public function setUser(?User $user): static
+    public function setUserId(?User $userId): static
     {
-        $this->user = $user;
+        $this->userId = $userId;
+
+        return $this;
+    }
+
+    public function getForumId(): ?Forum
+    {
+        return $this->forumId;
+    }
+
+    public function setForumId(?Forum $forumId): static
+    {
+        $this->forumId = $forumId;
 
         return $this;
     }
@@ -127,35 +137,14 @@ class Post
         return $this;
     }
 
-    public function getNbComments(): ?int
+    public function getMembers(): ?int
     {
-        return $this->nbComments;
+        return $this->members;
     }
 
-    public function setNbComments(int $nbComments): static
+    public function setMembers(int $members): static
     {
-        $this->nbComments = $nbComments;
-
-        return $this;
-    }
-
-    public function getTags(): Collection
-    {
-        return $this->tags;
-    }
-
-    public function addTag(Tag $tag): static
-    {
-        if (!$this->tags->contains($tag)) {
-            $this->tags->add($tag);
-        }
-
-        return $this;
-    }
-
-    public function removeTag(Tag $tag): static
-    {
-        $this->tags->removeElement($tag);
+        $this->members = $members;
 
         return $this;
     }
@@ -184,14 +173,29 @@ class Post
         return $this;
     }
 
-    public function getForum(): ?Forum
+    public function getComments(): Collection
     {
-        return $this->forum;
+        return $this->comments;
     }
 
-    public function setForum(?Forum $forum): static
+    public function addComment(Comment $comment): static
     {
-        $this->forum = $forum;
+        if (!$this->comments->contains($comment)) {
+            $this->comments->add($comment);
+            $comment->setPostId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeComment(Comment $comment): static
+    {
+        if ($this->comments->removeElement($comment)) {
+            // set the owning side to null (unless already changed)
+            if ($comment->getPostId() === $this) {
+                $comment->setPostId(null);
+            }
+        }
 
         return $this;
     }

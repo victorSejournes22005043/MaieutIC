@@ -26,17 +26,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 180, unique: true)]
     private ?string $username = null;
 
-    #[ORM\Column(type: 'text', nullable: true)]
-    private ?string $whoami = null;
+    #[ORM\Column(length: 100)]
+    private ?string $lastName = null;
 
-    #[ORM\Column(type: 'text', nullable: true)]
-    private ?string $myhobbies = null;
+    #[ORM\Column(length: 100)]
+    private ?string $firstName = null;
 
-    #[ORM\Column(type: 'text', nullable: true)]
-    private ?string $whatimdoing = null;
+    #[ORM\Column(length: 250, nullable: true)]
+    private ?string $affiliationLocation = null;
 
-    #[ORM\Column(type: 'text', nullable: true)]
-    private ?string $mygoals = null;
+    #[ORM\Column(length: 250, nullable: true)]
+    private ?string $specialization = null;
+
+    #[ORM\Column(length: 250, nullable: true)]
+    private ?string $researchTopic = null;
 
     #[ORM\ManyToMany(targetEntity: Post::class, inversedBy: 'subscribedUsers')]
     #[ORM\JoinTable(name: 'Subscription')]
@@ -44,6 +47,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: UserLike::class)]
     private Collection $user_likes;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: UserQuestions::class, cascade: ['persist', 'remove'])]
+    private Collection $userQuestions;
+
+    #[ORM\OneToMany(mappedBy: 'userId', targetEntity: Post::class)]
+    private Collection $posts;
+
+    #[ORM\OneToMany(mappedBy: 'userId', targetEntity: Comment::class)]
+    private Collection $comments;
 
     /**
      * @var list<string> The user roles
@@ -61,6 +73,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->subscribedPosts = new ArrayCollection();
         $this->user_likes = new ArrayCollection();
+        $this->userQuestions = new ArrayCollection();
+        $this->posts = new ArrayCollection();
+        $this->comments = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -159,50 +174,62 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getWhoami(): ?string
+    public function getLastName(): ?string
     {
-        return $this->whoami;
+        return $this->lastName;
     }
 
-    public function setWhoami(?string $whoami): static
+    public function setLastName(string $lastName): static
     {
-        $this->whoami = $whoami;
+        $this->lastName = $lastName;
 
         return $this;
     }
 
-    public function getMyhobbies(): ?string
+    public function getFirstName(): ?string
     {
-        return $this->myhobbies;
+        return $this->firstName;
     }
 
-    public function setMyhobbies(?string $myhobbies): static
+    public function setFirstName(string $firstName): static
     {
-        $this->myhobbies = $myhobbies;
+        $this->firstName = $firstName;
 
         return $this;
     }
 
-    public function getWhatimdoing(): ?string
+    public function getAffiliationLocation(): ?string
     {
-        return $this->whatimdoing;
+        return $this->affiliationLocation;
     }
 
-    public function setWhatimdoing(?string $whatimdoing): static
+    public function setAffiliationLocation(?string $affiliationLocation): static
     {
-        $this->whatimdoing = $whatimdoing;
+        $this->affiliationLocation = $affiliationLocation;
 
         return $this;
     }
 
-    public function getMygoals(): ?string
+    public function getSpecialization(): ?string
     {
-        return $this->mygoals;
+        return $this->specialization;
     }
 
-    public function setMygoals(?string $mygoals): static
+    public function setSpecialization(?string $specialization): static
     {
-        $this->mygoals = $mygoals;
+        $this->specialization = $specialization;
+
+        return $this;
+    }
+
+    public function getResearchTopic(): ?string
+    {
+        return $this->researchTopic;
+    }
+
+    public function setResearchTopic(?string $researchTopic): static
+    {
+        $this->researchTopic = $researchTopic;
 
         return $this;
     }
@@ -249,6 +276,87 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($user_like->getUser() === $this) {
                 $user_like->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getUserQuestions(): Collection
+    {
+        return $this->userQuestions;
+    }
+
+    public function addUserQuestion(UserQuestions $userQuestion): static
+    {
+        if (!$this->userQuestions->contains($userQuestion)) {
+            $this->userQuestions->add($userQuestion);
+            $userQuestion->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUserQuestion(UserQuestions $userQuestion): static
+    {
+        if ($this->userQuestions->removeElement($userQuestion)) {
+            // set the owning side to null (unless already changed)
+            if ($userQuestion->getUser() === $this) {
+                $userQuestion->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getPosts(): Collection
+    {
+        return $this->posts;
+    }
+
+    public function addPost(Post $post): static
+    {
+        if (!$this->posts->contains($post)) {
+            $this->posts->add($post);
+            $post->setUserId($this);
+        }
+
+        return $this;
+    }
+
+    public function removePost(Post $post): static
+    {
+        if ($this->posts->removeElement($post)) {
+            // set the owning side to null (unless already changed)
+            if ($post->getUserId() === $this) {
+                $post->setUserId(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getComments(): Collection
+    {
+        return $this->comments;
+    }
+
+    public function addComment(Comment $comment): static
+    {
+        if (!$this->comments->contains($comment)) {
+            $this->comments->add($comment);
+            $comment->setUserId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeComment(Comment $comment): static
+    {
+        if ($this->comments->removeElement($comment)) {
+            // set the owning side to null (unless already changed)
+            if ($comment->getUserId() === $this) {
+                $comment->setUserId(null);
             }
         }
 

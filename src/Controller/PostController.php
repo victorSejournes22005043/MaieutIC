@@ -15,7 +15,12 @@ class PostController extends AbstractController
     public function index(int $forum_id, EntityManagerInterface $entityManager): Response
     {
         $forum = $entityManager->getRepository(Forum::class)->find($forum_id);
-        $posts = $entityManager->getRepository(Post::class)->findBy(['forum' => $forum]);
+
+        if (!$forum) {
+            throw $this->createNotFoundException('Forum not found');
+        }
+
+        $posts = $entityManager->getRepository(Post::class)->findBy(['forumId' => $forum]);
 
         return $this->render('forum/posts.html.twig', [
             'forum' => $forum,

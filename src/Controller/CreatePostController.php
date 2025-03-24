@@ -9,17 +9,21 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 class CreatePostController extends AbstractController
 {
-    #[Route('/createpost', name: 'app_create_post')]
-
-    public function createPost(Request $request, EntityManagerInterface $entityManager): Response
+    #[Route('/forums/{forum_id}/createpost', name: 'app_create_post')]
+    public function createPost(int $forum_id, Request $request, EntityManagerInterface $entityManager): Response
     {
         // Ensure the user is authenticated
         if (!$this->getUser()) {
             return $this->redirectToRoute('app_login');
+        }
+
+        $forum = $entityManager->getRepository(Forum::class)->find($forum_id);
+
+        if (!$forum) {
+            throw $this->createNotFoundException('Forum not found');
         }
 
         $post = new Post();
@@ -30,15 +34,15 @@ class CreatePostController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $post = $form->getData();
 
-            $post->setUser($this->getUser());
+            $post->setUserId($this->getUser());
+            $post->setForumId($forum);
             $post->setCreationDate(new \DateTime());
             $post->setLastActivity(new \DateTime());
-            $post->setNbComments(0);
 
             $entityManager->persist($post);
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_home');
+            return $this->redirectToRoute('app_posts', ['forum_id' => $forum_id]);
         }
 
         return $this->render('post/create.html.twig', [

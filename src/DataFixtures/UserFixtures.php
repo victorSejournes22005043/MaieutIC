@@ -23,15 +23,19 @@ class UserFixtures extends Fixture
         $user->setEmail('user@example.com')
              ->setUsername('user1')
              ->setPassword($this->passwordHasher->hashPassword($user, 'password'))
-             ->setWhoami('I am a test user')
-             ->setMyhobbies('Coding, Reading')
-             ->setWhatimdoing('Learning Symfony')
-             ->setMygoals('Become a proficient Symfony developer');
+             ->setLastName('Doe')
+             ->setFirstName('John')
+             ->setAffiliationLocation('New York, USA')
+             ->setSpecialization('Web Development')
+             ->setResearchTopic('Symfony Framework');
 
         $manager->persist($user);
         $manager->flush();
 
         // Add reference for other fixtures
         $this->addReference('user1', $user);
+
+        // Add reference for UserQuestionsFixtures
+        $this->addReference('user_1', $user);
     }
 }

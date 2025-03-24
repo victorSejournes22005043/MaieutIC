@@ -3,11 +3,3 @@ controllers:
         path: ../src/Controller/
         namespace: App\Controller
     type: attribute
-
-forums:
-    path: /forums
-    controller: App\Controller\ForumController::index
-
-posts:
-    path: /forums/{forum_id}/posts
-    controller: App\Controller\PostController::index

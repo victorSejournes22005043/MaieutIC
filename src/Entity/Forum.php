@@ -8,6 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use App\Entity\Post;
+use App\Entity\User;
 
 #[ORM\Entity(repositoryClass: ForumRepository::class)]
 class Forum
@@ -17,19 +18,24 @@ class Forum
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 50)]
-    private ?string $name = null;
+    #[ORM\Column(length: 500)]
+    private ?string $title = null;
 
-    #[ORM\Column(length: 1000)]
-    private ?string $description = null;
+    #[ORM\Column(length: 5000)]
+    private ?string $body = null;
 
-    #[ORM\Column]
-    private ?int $nbMembers = null;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $userId = null;
+
+    #[ORM\ManyToOne(targetEntity: Forum::class)]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?Forum $forumId = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTimeInterface $lastActivity = null;
 
-    #[ORM\OneToMany(mappedBy: 'forum', targetEntity: Post::class, orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'forumId', targetEntity: Post::class, orphanRemoval: true)]
     private Collection $posts;
 
     public function __construct()
@@ -42,38 +48,50 @@ class Forum
         return $this->id;
     }
 
-    public function getName(): ?string
+    public function getTitle(): ?string
     {
-        return $this->name;
+        return $this->title;
     }
 
-    public function setName(string $name): static
+    public function setTitle(string $title): static
     {
-        $this->name = $name;
+        $this->title = $title;
 
         return $this;
     }
 
-    public function getDescription(): ?string
+    public function getBody(): ?string
     {
-        return $this->description;
+        return $this->body;
     }
 
-    public function setDescription(string $description): static
+    public function setBody(string $body): static
     {
-        $this->description = $description;
+        $this->body = $body;
 
         return $this;
     }
 
-    public function getNbMembers(): ?int
+    public function getUserId(): ?User
     {
-        return $this->nbMembers;
+        return $this->userId;
     }
 
-    public function setNbMembers(int $nbMembers): static
+    public function setUserId(?User $userId): static
     {
-        $this->nbMembers = $nbMembers;
+        $this->userId = $userId;
+
+        return $this;
+    }
+
+    public function getForumId(): ?Forum
+    {
+        return $this->forumId;
+    }
+
+    public function setForumId(?Forum $forumId): static
+    {
+        $this->forumId = $forumId;
 
         return $this;
     }
@@ -99,7 +117,7 @@ class Forum
     {
         if (!$this->posts->contains($post)) {
             $this->posts->add($post);
-            $post->setForum($this);
+            $post->setForumId($this);
         }
 
         return $this;
@@ -109,8 +127,8 @@ class Forum
     {
         if ($this->posts->removeElement($post)) {
             // set the owning side to null (unless already changed)
-            if ($post->getForum() === $this) {
-                $post->setForum(null);
+            if ($post->getForumId() === $this) {
+                $post->setForumId(null);
             }
         }
 
