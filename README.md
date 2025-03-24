@@ -22,11 +22,6 @@ Ensure you have the following dependencies installed:
    composer install
    ```
 
-3. **Install JS dependencies**:
-   ```sh
-   npm install
-   ```
-
 4. **Set up environment variables**:
    ```sh
    cp .env.example .env
@@ -40,18 +35,7 @@ Ensure you have the following dependencies installed:
    php bin/console doctrine:migrations:migrate
    ```
 
-6. **Compile Assets with Webpack Encore**:
-   Development Mode
-   ```bash
-   npm run dev
-   ```
-   
-   Production Mode
-   ```bash
-   npm run build
-   ```
-
-7. **Start the Symfony Server**:
+6. **Compile CSS**:
    ```sh
-   symfony server:start
+   php bin/console tailwind:build --watch
    ```
