@@ -20,8 +20,8 @@ class CommentFixtures extends Fixture implements DependentFixtureInterface
         $comment = new Comment();
         $comment->setBody('This is a comment.')
                 ->setCreationDate(new \DateTime())
-                ->setUserId($user)
-                ->setPostId($post);
+                ->setUser($user)
+                ->setPost($post);
 
         $manager->persist($comment);
         $manager->flush();

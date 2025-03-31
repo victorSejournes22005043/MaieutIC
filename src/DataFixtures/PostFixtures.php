@@ -18,12 +18,11 @@ class PostFixtures extends Fixture implements DependentFixtureInterface
         $forum = $this->getReference('forum1', Forum::class);
 
         $post = new Post();
-        $post->setTitle('Post Title')
-             ->setBody('This is the body of the post.')
+        $post->setName('Post Title')
+             ->setDescription('This is the body of the post.')
              ->setUser($user)
              ->setCreationDate(new \DateTime())
              ->setLastActivity(new \DateTime())
-             ->setNbComments(0)
              ->setForum($forum);
 
         $manager->persist($post);

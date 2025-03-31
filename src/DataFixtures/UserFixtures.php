@@ -34,8 +34,5 @@ class UserFixtures extends Fixture
 
         // Add reference for other fixtures
         $this->addReference('user1', $user);
-
-        // Add reference for UserQuestionsFixtures
-        $this->addReference('user_1', $user);
     }
 }

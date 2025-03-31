@@ -69,6 +69,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?string $password = null;
 
+    #[ORM\Column(type: 'integer')]
+    private ?int $userType = null;
+
     public function __construct()
     {
         $this->subscribedPosts = new ArrayCollection();
@@ -359,6 +362,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $comment->setUserId(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getUserType(): ?int
+    {
+        return $this->userType;
+    }
+
+    public function setUserType(int $userType): static
+    {
+        $this->userType = $userType;
 
         return $this;
     }

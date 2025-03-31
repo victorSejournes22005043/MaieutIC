@@ -26,20 +26,17 @@ class Post
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
-    private ?User $userId = null;
+    private ?User $user = null;
 
     #[ORM\ManyToOne(targetEntity: Forum::class, inversedBy: 'posts')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Forum $forumId = null;
+    private ?Forum $forum = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTimeInterface $creationDate = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTimeInterface $lastActivity = null;
-
-    #[ORM\Column]
-    private ?int $members = null;
 
     #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'subscribedPosts')]
     private Collection $subscribedUsers;
@@ -72,7 +69,7 @@ class Post
 
     public function setName(string $name): static
     {
-        $this->name = name;
+        $this->name = $name;
 
         return $this;
     }
@@ -89,26 +86,26 @@ class Post
         return $this;
     }
 
-    public function getUserId(): ?User
+    public function getUser(): ?User
     {
-        return $this->userId;
+        return $this->user;
     }
 
-    public function setUserId(?User $userId): static
+    public function setUser(?User $user): static
     {
-        $this->userId = $userId;
+        $this->user = $user;
 
         return $this;
     }
 
-    public function getForumId(): ?Forum
+    public function getForum(): ?Forum
     {
-        return $this->forumId;
+        return $this->forum;
     }
 
-    public function setForumId(?Forum $forumId): static
+    public function setForum(?Forum $forum): static
     {
-        $this->forumId = $forumId;
+        $this->forum = $forum;
 
         return $this;
     }
@@ -133,18 +130,6 @@ class Post
     public function setLastActivity(\DateTimeInterface $lastActivity): static
     {
         $this->lastActivity = $lastActivity;
-
-        return $this;
-    }
-
-    public function getMembers(): ?int
-    {
-        return $this->members;
-    }
-
-    public function setMembers(int $members): static
-    {
-        $this->members = $members;
 
         return $this;
     }

@@ -11,8 +11,7 @@ class UserQuestionsFixtures extends Fixture
 {
     public function load(ObjectManager $manager): void
     {
-        // Example user reference (ensure UserFixtures sets this reference)
-        $user = $this->getReference('user_1'); // Replace 'user_1' with the actual reference from UserFixtures
+        $user = $this->getReference('user1', User::class);
 
         for ($i = 1; $i <= 10; $i++) {
             $userQuestion = new UserQuestions();

@@ -8,7 +8,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use App\Entity\Post;
-use App\Entity\User;
 
 #[ORM\Entity(repositoryClass: ForumRepository::class)]
 class Forum
@@ -24,18 +23,10 @@ class Forum
     #[ORM\Column(length: 5000)]
     private ?string $body = null;
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?User $userId = null;
-
-    #[ORM\ManyToOne(targetEntity: Forum::class)]
-    #[ORM\JoinColumn(nullable: true)]
-    private ?Forum $forumId = null;
-
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTimeInterface $lastActivity = null;
 
-    #[ORM\OneToMany(mappedBy: 'forumId', targetEntity: Post::class, orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'forum', targetEntity: Post::class, orphanRemoval: true)]
     private Collection $posts;
 
     public function __construct()
@@ -68,30 +59,6 @@ class Forum
     public function setBody(string $body): static
     {
         $this->body = $body;
-
-        return $this;
-    }
-
-    public function getUserId(): ?User
-    {
-        return $this->userId;
-    }
-
-    public function setUserId(?User $userId): static
-    {
-        $this->userId = $userId;
-
-        return $this;
-    }
-
-    public function getForumId(): ?Forum
-    {
-        return $this->forumId;
-    }
-
-    public function setForumId(?Forum $forumId): static
-    {
-        $this->forumId = $forumId;
 
         return $this;
     }

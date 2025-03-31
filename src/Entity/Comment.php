@@ -24,11 +24,11 @@ class Comment
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
-    private ?User $userId = null;
+    private ?User $user = null;
 
     #[ORM\ManyToOne(targetEntity: Post::class)]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Post $postId = null;
+    private ?Post $post = null;
 
     #[ORM\OneToMany(mappedBy: 'comment', targetEntity: UserLike::class)]
     private Collection $user_likes;
@@ -114,30 +114,6 @@ class Comment
                 $user_like->setComment(null);
             }
         }
-
-        return $this;
-    }
-
-    public function getUserId(): ?User
-    {
-        return $this->userId;
-    }
-
-    public function setUserId(User $userId): static
-    {
-        $this->userId = $userId;
-
-        return $this;
-    }
-
-    public function getPostId(): ?Post
-    {
-        return $this->postId;
-    }
-
-    public function setPostId(Post $postId): static
-    {
-        $this->postId = $postId;
 
         return $this;
     }
