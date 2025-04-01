@@ -12,5 +12,82 @@
         {% block body %}
             {{ render(controller('App\\Controller\\NavbarController::navbar')) }}
         {% endblock %}
+        <div class="flex flex-col items-center max-w-7xl mx-auto my-10">
+            <h1 class="text-5xl my-2 font-semibold">MaieutIC</h1>
+            <p class="text-2xl">La plateforme facilitant l’échange entre doctorants !</p>
+            <ul class="flex flex-wrap justify-center my-5">
+                <li>
+                    <a href="{{ path('app_home') }}" class="relative">
+                        <img src="{{ asset('images/bureau.jpg') }}" alt="bureau" class="max-h-64 m-3 rounded-lg brightness-50"/>
+                        <div class="absolute bottom-5 left-9 text-white">
+                            <div class="text-xl font-bold">Bureau</div>
+                            <div>Profil</div>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path('app_home') }}" class="relative">
+                        <img src="{{ asset('images/salon.jpg') }}" alt="salon" class="max-h-64 m-3 rounded-lg brightness-50"/>
+                        <div class="absolute bottom-5 left-9 text-white">
+                            <div class="text-xl font-bold">Salon</div>
+                            <div>Forums</div>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path('app_home') }}" class="relative">
+                        <img src="{{ asset('images/salle_a_manger.png') }}" alt="salle à manger" class="max-h-64 m-3 rounded-lg brightness-50"/>
+                        <div class="absolute bottom-5 left-9 text-white">
+                            <div class="text-xl font-bold">Salle à manger</div>
+                            <div>Cartes de concepts et liens</div>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path('app_home') }}" class="relative">
+                        <img src="{{ asset('images/bibliotèque.jpg') }}" alt="bibliotèque" class="max-h-64 m-3 rounded-lg brightness-50"/>
+                        <div class="absolute bottom-5 left-9 text-white">
+                            <div class="text-xl font-bold">Bibliothèque</div>
+                            <div>Auteurs et oeuvres</div>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path('app_home') }}" class="relative">
+                        <img src="{{ asset('images/cuisine.jpg') }}" alt="cuisine" class="max-h-64 m-3 rounded-lg brightness-50"/>
+                        <div class="absolute bottom-5 left-9 text-white">
+                            <div class="text-xl font-bold">Cuisine</div>
+                            <div>Partie méthodologie</div>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path('app_home') }}" class="relative">
+                        <img src="{{ asset('images/détante.jpeg') }}" alt="salle à manger" class="max-h-64 m-3 rounded-lg brightness-50"/>
+                        <div class="absolute bottom-5 left-9 text-white">
+                            <div class="text-xl font-bold">Détente</div>
+                            <div>Gestion du stress, sophrologie</div>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path('app_home') }}" class="relative">
+                        <img src="{{ asset('images/administratif.png') }}" alt="administratif" class="max-h-64 m-3 rounded-lg brightness-50"/>
+                            <div class="absolute bottom-5 left-9 text-white">
+                            <div class="text-xl font-bold">Administratif</div>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path('app_home') }}" class="relative">
+                        <img src="{{ asset('images/discussion.jpg') }}" alt="discussion" class="max-h-64 m-3 rounded-lg brightness-50"/>
+                        <div class="absolute bottom-5 left-9 text-white">
+                            <div class="text-xl font-bold">Discussions</div>
+                            <div>Messagerie</div>
+                        </div>
+                    </a>
+                </li>
+            </ul>
+        </div>
     </body>
 </html>
