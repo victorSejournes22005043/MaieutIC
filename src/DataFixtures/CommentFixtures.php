@@ -26,7 +26,6 @@ class CommentFixtures extends Fixture implements DependentFixtureInterface
         $manager->persist($comment);
         $manager->flush();
 
-        // Add reference for other fixtures
         $this->addReference('comment1', $comment);
     }
 

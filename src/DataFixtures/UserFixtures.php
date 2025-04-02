@@ -27,7 +27,8 @@ class UserFixtures extends Fixture
              ->setFirstName('John')
              ->setAffiliationLocation('New York, USA')
              ->setSpecialization('Web Development')
-             ->setResearchTopic('Symfony Framework');
+             ->setResearchTopic('Symfony Framework')
+             ->setUserType(0);
 
         $manager->persist($user);
         $manager->flush();
