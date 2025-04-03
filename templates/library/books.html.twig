@@ -54,36 +54,25 @@
         margin: 0 0 10px;
         font-size: 14px;
         color: gray;
-        text-align: left;
-        padding-left: 20px;
-    }
-    .card .nationality {
-        position: absolute;
-        bottom: 10px;
-        right: 15px;
-        width: 30px;
-        height: 20px;
-        border: 1px solid white;
-        border-radius: 3px;
+        text-align: center;
     }
 </style>
 
 <div>
     <div class="tabs">
-        <button class="active">Auteurs</button>
+        <button onclick="window.location.href='{{ path('app_library') }}'">Auteurs</button>
         <button onclick="window.location.href='{{ path('app_library_articles') }}'">Articles</button>
-        <button onclick="window.location.href='{{ path('app_library_books') }}'">Livres</button>
+        <button class="active">Livres</button>
     </div>
 
     <div class="grid">
-        {% for author in authors %}
+        {% for book in books %}
         <div class="card">
-            <a href="{{ author.link }}" target="_blank">
-                <img src="{{ author.image }}" alt="{{ author.name }}">
+            <a href="{{ book.link }}" target="_blank">
+                <img src="{{ book.image }}" alt="{{ book.title }}">
             </a>
-            <h3>{{ author.name }}</h3>
-            <p>{{ author.birthYear }} - {{ author.deathYear ?: '' }}</p>
-            <img src="{{ asset('images/flags/' ~ author.nationality ~ '.png') }}" alt="{{ author.nationality }}" class="nationality">
+            <h3>{{ book.title }}</h3>
+            <p>{{ book.author }}</p>
         </div>
         {% endfor %}
     </div>

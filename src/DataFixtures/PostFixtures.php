@@ -28,7 +28,6 @@ class PostFixtures extends Fixture implements DependentFixtureInterface
         $manager->persist($post);
         $manager->flush();
 
-        // Add reference for other fixtures
         $this->addReference('post1', $post);
     }
 

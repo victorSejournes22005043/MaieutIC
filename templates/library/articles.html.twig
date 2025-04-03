@@ -1,0 +1,86 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Articles{% endblock %}
+
+{% block body %}
+<style>
+    .articles-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+        font-size: 16px;
+        text-align: left;
+    }
+    .articles-table th, .articles-table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+    }
+    .articles-table th {
+        background-color: #f4f4f4;
+        font-weight: bold;
+    }
+    .articles-table td a {
+        text-decoration: none;
+        color: #007bff;
+    }
+    .articles-table td a:hover {
+        text-decoration: underline;
+    }
+    .tabs {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+    .tabs button {
+        background-color: #f4f4f4;
+        border: none;
+        padding: 10px 20px;
+        cursor: pointer;
+        font-size: 16px;
+        color: #333;
+        border-radius: 5px 5px 0 0;
+        margin-right: 5px;
+    }
+    .tabs button.active {
+        background-color: #4a4a8c;
+        color: white;
+        font-weight: bold;
+    }
+    .tabs button:hover {
+        background-color: #ddd;
+    }
+    .filter-icon {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        margin-bottom: 10px;
+    }
+    .filter-icon svg {
+        margin-right: 5px;
+    }
+</style>
+
+<div class="tabs">
+    <button onclick="window.location.href='{{ path('app_library') }}'">Auteurs</button>
+    <button class="active">Articles</button>
+    <button onclick="window.location.href='{{ path('app_library_books') }}'">Livres</button>
+</div>
+
+<table class="articles-table">
+    <thead>
+        <tr>
+            <th>Titre</th>
+            <th>Auteur</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for article in articles %}
+        <tr>
+            <td><a href="{{ article.link }}" target="_blank">{{ article.title }}</a></td>
+            <td>{{ article.author }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}
