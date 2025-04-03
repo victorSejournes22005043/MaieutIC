@@ -1,20 +1,76 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello LibraryController!{% endblock %}
+{% block title %}Bibliothèque{% endblock %}
 
 {% block body %}
 <style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
+    .tabs {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+    .tabs button {
+        background-color: #f5f5f5;
+        border: none;
+        padding: 10px 20px;
+        margin: 0 5px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+    .tabs button.active {
+        background-color: #007bff;
+        color: white;
+    }
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 20px;
+        padding: 20px;
+    }
+    .card {
+        text-align: center;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+        background-color: white;
+    }
+    .card img {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+    }
+    .card h3 {
+        margin: 10px 0 5px;
+        font-size: 16px;
+    }
+    .card p {
+        margin: 0 0 10px;
+        font-size: 14px;
+        color: gray;
+    }
+    .card .nationality {
+        font-size: 20px;
+    }
 </style>
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
+<div>
+    <div class="tabs">
+        <button class="active">Auteurs</button>
+        <button>Articles</button>
+        <button>Livres</button>
+    </div>
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>D:/Users/User/Documents/Etudes/BUT info/3eme année/stage/MaieutIC/src/Controller/LibraryController.php</code></li>
-        <li>Your template at <code>D:/Users/User/Documents/Etudes/BUT info/3eme année/stage/MaieutIC/templates/library/index.html.twig</code></li>
-    </ul>
+    <div class="grid">
+        {% for author in authors %}
+        <div class="card">
+            <a href="{{ author.link }}" target="_blank">
+                <img src="{{ author.image }}" alt="{{ author.name }}">
+            </a>
+            <h3>{{ author.name }}</h3>
+            <p>{{ author.birthYear }} - {{ author.deathYear ?: '' }}</p>
+            <p class="nationality">{{ author.nationality }}</p>
+        </div>
+        {% endfor %}
+    </div>
 </div>
 {% endblock %}

@@ -21,6 +21,16 @@ class AuthorFixtures extends Fixture
             $manager->persist($author);
         }
 
+        $author = new Author();
+        $author->setName("Pierre Bourdieu")
+            ->setBirthYear(1930)
+            ->setDeathYear(2002)
+            ->setNationality("French")
+            ->setLink("https://en.wikipedia.org/wiki/Pierre_Bourdieu")
+            ->setImage("https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Pierre_Bourdieu_2001.jpg/800px-Pierre_Bourdieu_2001.jpg");
+            
+        $manager->persist($author);
+
         $manager->flush();
     }
 }
