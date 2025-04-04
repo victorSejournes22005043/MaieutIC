@@ -1,6 +1,9 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}Bibliothèque{% endblock %}
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('styles/app.css') }}">
+{% endblock %}
 
 {% block body %}
 <style>
@@ -57,6 +60,7 @@
         text-align: center;
     }
 </style>
+{{ render(controller('App\\Controller\\NavbarController::navbar')) }}
 
 <div>
     <div class="tabs">
