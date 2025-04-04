@@ -1,6 +1,10 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}Bibliothèque{% endblock %}
+    
+    {% block stylesheets %}
+        <link rel="stylesheet" href="{{ asset('styles/app.css') }}">
+    {% endblock %}
 
 {% block body %}
 <style>
@@ -67,6 +71,7 @@
         border-radius: 3px;
     }
 </style>
+{{ render(controller('App\\Controller\\NavbarController::navbar')) }}
 
 <div>
     <div class="tabs">

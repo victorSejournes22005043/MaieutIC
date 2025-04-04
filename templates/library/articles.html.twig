@@ -1,6 +1,9 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}Articles{% endblock %}
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('styles/app.css') }}">
+{% endblock %}
 
 {% block body %}
 <style>
@@ -59,6 +62,7 @@
         margin-right: 5px;
     }
 </style>
+{{ render(controller('App\\Controller\\NavbarController::navbar')) }}
 
 <div class="tabs">
     <button onclick="window.location.href='{{ path('app_library') }}'">Auteurs</button>
