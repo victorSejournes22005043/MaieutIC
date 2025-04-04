@@ -14,24 +14,10 @@ class ForumController extends AbstractController
 
     public function index(ForumRepository $forumRepository): Response
     {
-        $forums = $forumRepository->findAll();
+        $forums = $forumRepository->findAllOrderedByTitle();
 
         return $this->render('forum/forums.html.twig', [
             'forums' => $forums,
-        ]);
-    }
-
-    #[Route('/forums/{id}', name:'forum_show')]
-    public function show($id, ForumRepository $forumRepository): Response
-    {
-        $forum = $forumRepository->find($id);
-
-        if (!$forum) {
-            throw $this->createNotFoundException('Forum not found');
-        }
-
-        return $this->render('forum/forum.html.twig', [
-            'forum' => $forum,
         ]);
     }
 }

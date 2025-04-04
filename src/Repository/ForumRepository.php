@@ -40,4 +40,17 @@ class ForumRepository extends ServiceEntityRepository
     //            ->getOneOrNullResult()
     //        ;
     //    }
+    
+    /**
+     * Find all forums ordered by title.
+     *
+     * @return Forum[] Returns an array of Forum objects
+     */
+    public function findAllOrderedByTitle(): array
+    {
+        return $this->createQueryBuilder('f')
+            ->orderBy('f.title', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

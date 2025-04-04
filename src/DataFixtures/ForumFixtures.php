@@ -11,13 +11,29 @@ class ForumFixtures extends Fixture
 {
     public function load(ObjectManager $manager): void
     {
-        $user = $this->getReference('user1', User::class);
-        $forum = new Forum();
-        $forum->setTitle('Forum1')
-              ->setBody('This is a forum.')
-              ->setLastActivity(new \DateTime());
+        // $user = $this->getReference('user1', User::class);
+        $forumNames = [
+            'General Discussion',
+            'Announcements',
+            'Feedback & Suggestions',
+            'Off-Topic',
+            'Technical Support',
+            'Events & Meetups',
+            'Resources & Tools',
+            'Job Opportunities',
+            'Community Projects',
+            'Miscellaneous'
+        ];
 
-        $manager->persist($forum);
+        // Create 10 forums with a reference to the user
+        foreach ($forumNames as $i => $forumName) {
+            $forum = new Forum();
+            $forum->setTitle("$forumName")
+                  ->setBody("This is forum number $i.")
+                  ->setLastActivity(new \DateTime());
+
+            $manager->persist($forum);
+        }
         $manager->flush();
 
         $this->addReference('forum1', $forum);

@@ -3,12 +3,18 @@
 <html>
 <head>
     <title>Forums</title>
+    {% block stylesheets %}
+        <link rel="stylesheet" href="{{ asset('styles/app.css') }}">
+    {% endblock %}
 </head>
 <body>
+    {{ render(controller('App\\Controller\\NavbarController::navbar')) }}
     <h1>Forums</h1>
     <ul>
         {% for forum in forums %}
-            <li><a href="{{ path('posts', { 'forum_id': forum.id }) }}">{{ forum.name }}</a></li>
+            <li>
+                <a><h3>{{ forum.title }}</h3></a>
+            </li>
         {% endfor %}
     </ul>
 </body>

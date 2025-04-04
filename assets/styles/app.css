@@ -3,5 +3,5 @@
 @tailwind utilities;
 
 body {
-    background-color: #E0E3E7;
+    @apply bg-[url('../images/bgPatternWhite.png')] shadow-[inset_0_0_0_1000px_#e0e3e78f];
 }
