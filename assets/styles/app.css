@@ -5,7 +5,7 @@
 body {
     @apply bg-[url('../images/bgPatternWhite.png')];
     @apply h-full;
-    @apply shadow-[inset_0_0_0_1000px_#e0e3e78f];
+    @apply shadow-[inset_0_0_0_1000px_#e0e3e7af];
 }
 
 html {
