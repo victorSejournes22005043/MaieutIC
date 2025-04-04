@@ -6,10 +6,10 @@ use App\Entity\User;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\IsTrue;
@@ -20,6 +20,9 @@ class RegistrationFormType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $dynamicQuestions = $options['dynamic_questions'] ?? [];
+        $requiredQuestions = $options['required_questions'] ?? [];
+
         $builder
             ->add('email', EmailType::class, [
                 'constraints' => [
@@ -41,7 +44,6 @@ class RegistrationFormType extends AbstractType
                     new Length([
                         'min' => 6,
                         'minMessage' => 'Your password should be at least {{ limit }} characters',
-                        // max length allowed by Symfony for security reasons
                         'max' => 4096,
                     ]),
                 ],
@@ -76,6 +78,29 @@ class RegistrationFormType extends AbstractType
                         'message' => 'You should agree to our terms.',
                     ]),
                 ],
+            ])
+            ->add('userQuestions', CollectionType::class, [
+                'entry_type' => TextareaType::class,
+                'entry_options' => [
+                    'label' => false,
+                ],
+                'allow_add' => true,
+                'mapped' => false,
+                'required' => false,
+                'constraints' => [
+                    new \Symfony\Component\Validator\Constraints\Callback([
+                        'callback' => function ($questions, $context) use ($requiredQuestions) {
+                            foreach ($requiredQuestions as $index) {
+                                if (empty($questions[$index])) {
+                                    $context->buildViolation('This question is required.')
+                                        ->atPath("[$index]")
+                                        ->addViolation();
+                                }
+                            }
+                        },
+                    ]),
+                ],
+                'data' => array_fill(0, count($dynamicQuestions), ''), // Pré-remplir avec des champs vides
             ]);
     }
 
@@ -83,6 +108,8 @@ class RegistrationFormType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => User::class,
+            'dynamic_questions' => [],
+            'required_questions' => [], // Ajout de l'option pour les questions obligatoires
         ]);
     }
 }

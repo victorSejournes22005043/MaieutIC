@@ -20,6 +20,15 @@
         {{ form_row(registrationForm.researchTopic) }}
         {{ form_row(registrationForm.agreeTerms) }}
 
+        <h3>Additional Questions</h3>
+        {% for question, field in registrationForm.userQuestions %}
+            <div>
+                <label>{{ dynamic_questions[loop.index0] }}</label>
+                {{ form_widget(field) }}
+                {{ form_errors(field) }}
+            </div>
+        {% endfor %}
+
         <button type="submit" class="btn">Register</button>
     {{ form_end(registrationForm) }}
 {% endblock %}

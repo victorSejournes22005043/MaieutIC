@@ -70,7 +70,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[ORM\Column(type: 'integer')]
-    private ?int $userType = null;
+    private ?int $userType = 0;
 
     public function __construct()
     {
