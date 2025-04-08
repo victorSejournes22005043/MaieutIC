@@ -47,6 +47,10 @@ class Chat
 
     public function setUser(User $user): static
     {
+        if (!$user) {
+            throw new \InvalidArgumentException('User cannot be null');
+        }
+
         $this->user = $user;
 
         return $this;

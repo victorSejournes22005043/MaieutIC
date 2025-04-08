@@ -1,20 +1,80 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello ChatController!{% endblock %}
+{% block title %}Chat{% endblock %}
 
 {% block body %}
 <style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
+    .chat-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
+    .chat-messages { border: 1px solid #ccc; padding: 1em; height: 300px; overflow-y: scroll; margin-bottom: 1em; }
+    .chat-form { display: flex; gap: 0.5em; }
+    .chat-form input[type="text"] { flex: 1; }
 </style>
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
+<div class="chat-wrapper">
+    <h1>Live Chat</h1>
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>D:/Users/User/Documents/Etudes/BUT info/3eme année/stage/MaieutIC/src/Controller/ChatController.php</code></li>
-        <li>Your template at <code>D:/Users/User/Documents/Etudes/BUT info/3eme année/stage/MaieutIC/templates/chat/index.html.twig</code></li>
-    </ul>
+    <div id="chat-messages" class="chat-messages">
+        <!-- Messages will be loaded here -->
+    </div>
+
+    <form id="chat-form" class="chat-form">
+        <input type="text" id="message" placeholder="Type your message..." required>
+        <button type="submit">Send</button>
+    </form>
 </div>
+
+<script>
+    const chatMessages = document.getElementById('chat-messages');
+    const chatForm = document.getElementById('chat-form');
+    const messageInput = document.getElementById('message');
+
+    // Function to fetch messages
+    async function fetchMessages() {
+        try {
+            const response = await fetch('/chat/messages');
+            if (!response.ok) throw new Error('Failed to fetch messages');
+            const messages = await response.json();
+            chatMessages.innerHTML = messages.map(msg => `<p><strong>${msg.user}:</strong> ${msg.text}</p>`).join('');
+        } catch (error) {
+            console.error('Error fetching messages:', error);
+            chatMessages.innerHTML = '<p style="color: red;">Error loading messages. Check console for details.</p>';
+        }
+    }
+
+    // Function to send a message
+    chatForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const message = messageInput.value.trim();
+
+        if (!message) {
+            alert('Message cannot be empty');
+            return;
+        }
+
+        try {
+            const response = await fetch('/chat/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: message })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('Error sending message:', errorData);
+                alert(errorData.error || 'Failed to send message');
+                return;
+            }
+
+            messageInput.value = '';
+            fetchMessages();
+        } catch (error) {
+            console.error('Error sending message:', error);
+            alert('An error occurred while sending the message');
+        }
+    });
+
+    // Fetch messages every 2 seconds
+    setInterval(fetchMessages, 2000);
+    fetchMessages();
+</script>
 {% endblock %}
