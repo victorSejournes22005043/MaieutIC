@@ -51,24 +51,35 @@ final class AdminInterfaceController extends AbstractController
     }
 
     #[Route('/admin/tag/edit/{id}', name: 'app_admin_tag_edit', methods: ['POST'])]
-    public function edit(Tag $tag, Request $request, EntityManagerInterface $entityManager): RedirectResponse
+    public function edit(Tag $tag, Request $request, EntityManagerInterface $entityManager, TagRepository $tagRepository): RedirectResponse
     {
         $name = $request->request->get('name');
-
+    
         if (!empty(trim($name))) {
-            $tag->setName($name);
-            $entityManager->flush();
-            $this->addFlash('success', 'Le tag a été modifié avec succès.');
+            $existingTag = $tagRepository->findOneBy(['name' => $name]);
+            if ($existingTag && $existingTag->getId() !== $tag->getId()) {
+                $this->addFlash('error', 'Un tag avec ce nom existe déjà.');
+            } else {
+                $tag->setName($name);
+                $entityManager->flush();
+                $this->addFlash('success', 'Le tag a été modifié avec succès.');
+            }
         } else {
             $this->addFlash('error', 'Le nom du tag ne peut pas être vide.');
         }
-
+    
         return $this->redirectToRoute('app_admin_interface');
     }
 
     #[Route('/admin/tag/delete/{id}', name: 'app_admin_tag_delete')]
     public function delete(Tag $tag, EntityManagerInterface $entityManager): Response
     {
+        $user = $this->security->getUser();
+
+        if (!$user || $user->getUserType() !== 1) {
+            return $this->redirectToRoute('app_login');
+        }
+
         $entityManager->remove($tag);
         $entityManager->flush();
         $this->addFlash('success', 'Le tag a été supprimé avec succès.');
@@ -77,16 +88,21 @@ final class AdminInterfaceController extends AbstractController
     }
 
     #[Route('/admin/tag/add', name: 'app_admin_tag_add', methods: ['POST'])]
-    public function add(Request $request, EntityManagerInterface $entityManager): RedirectResponse
+    public function add(Request $request, EntityManagerInterface $entityManager, TagRepository $tagRepository): RedirectResponse
     {
         $tag = new Tag();
         $tagForm = $this->createForm(TagFormType::class, $tag);
         $tagForm->handleRequest($request);
 
         if ($tagForm->isSubmitted() && $tagForm->isValid()) {
-            $entityManager->persist($tag);
-            $entityManager->flush();
-            $this->addFlash('success', 'Le tag a été ajouté avec succès.');
+            $existingTag = $tagRepository->findOneBy(['name' => $tag->getName()]);
+            if ($existingTag) {
+                $this->addFlash('error', 'Un tag avec ce nom existe déjà.');
+            } else {
+                $entityManager->persist($tag);
+                $entityManager->flush();
+                $this->addFlash('success', 'Le tag a été ajouté avec succès.');
+            }
         } else {
             $this->addFlash('error', 'Le nom du tag ne peut pas être vide.');
         }
