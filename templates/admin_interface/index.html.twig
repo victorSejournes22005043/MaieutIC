@@ -25,7 +25,7 @@
                     <tr class="hover:bg-gray-50">
                         <td class="border border-gray-300 px-4 py-2">{{ tag.name }}</td>
                         <td class="border border-gray-300 px-4 py-2 space-x-2">
-                            <a href="{{ path('app_admin_tag_edit', {'id': tag.id}) }}" class="text-blue-500 hover:underline">Modifier</a>
+                            <button class="text-blue-500 hover:underline" onclick="openEditModal({{ tag.id }}, '{{ tag.name }}')">Modifier</button>
                             <a href="{{ path('app_admin_tag_delete', {'id': tag.id}) }}" class="text-red-500 hover:underline" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce tag ?');">Supprimer</a>
                         </td>
                     </tr>
@@ -39,12 +39,69 @@
     </table>
 </div>
 
-<!-- Formulaire d'ajout de tag -->
-<h2 class="text-xl font-bold mb-2">Ajouter un nouveau tag</h2>
-{{ form_start(tagForm, {'attr': {'class': 'space-y-4'}}) }}
-    {{ form_widget(tagForm, {'attr': {'class': 'w-full p-2 border border-gray-300 rounded'}}) }}
-    <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Ajouter</button>
-{{ form_end(tagForm) }}
+<!-- Bouton pour ouvrir le modal de création -->
+<button class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600" onclick="openCreateModal()">Ajouter un nouveau tag</button>
+
+<!-- Modal pour l'édition -->
+<div id="edit-modal" class="modal hidden">
+    <div class="modal-content">
+        <span class="close" onclick="closeEditModal()">&times;</span>
+        <h2 class="text-xl font-bold mb-4">Modifier le Tag</h2>
+        <form id="edit-form" method="post" action="">
+            <input type="text" id="edit-tag-name" name="name" class="w-full p-2 border border-gray-300 rounded mb-4">
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Enregistrer</button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal pour la création -->
+<div id="create-modal" class="modal hidden">
+    <div class="modal-content">
+        <span class="close" onclick="closeCreateModal()">&times;</span>
+        <h2 class="text-xl font-bold mb-4">Ajouter un nouveau tag</h2>
+        {{ form_start(tagForm, {'attr': {'id': 'create-form', 'class': 'space-y-4'}, 'action': path('app_admin_tag_add')}) }}
+            {{ form_widget(tagForm, {'attr': {'class': 'w-full p-2 border border-gray-300 rounded'}}) }}
+            <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Ajouter</button>
+        {{ form_end(tagForm) }}
+    </div>
+</div>
+
+<style>
+    .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .modal-content {
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        position: relative;
+    }
+
+    .close {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 1.5rem;
+        cursor: pointer;
+    }
+
+    .hidden {
+        display: none;
+    }
+</style>
 
 <script>
     document.getElementById('search-bar').addEventListener('input', function () {
@@ -60,5 +117,24 @@
             })
             .catch(error => console.error('Erreur lors de la recherche des tags:', error));
     });
+
+    function openEditModal(id, name) {
+        document.getElementById('edit-modal').classList.remove('hidden');
+        const editUrl = `{{ path('app_admin_tag_edit', {'id': 'PLACEHOLDER'}) }}`.replace('PLACEHOLDER', id);
+        document.getElementById('edit-form').action = editUrl;
+        document.getElementById('edit-tag-name').value = name;
+    }
+
+    function closeEditModal() {
+        document.getElementById('edit-modal').classList.add('hidden');
+    }
+
+    function openCreateModal() {
+        document.getElementById('create-modal').classList.remove('hidden');
+    }
+
+    function closeCreateModal() {
+        document.getElementById('create-modal').classList.add('hidden');
+    }
 </script>
 {% endblock %}

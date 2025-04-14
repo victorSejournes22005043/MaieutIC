@@ -50,24 +50,20 @@ final class AdminInterfaceController extends AbstractController
         ]);
     }
 
-    #[Route('/admin/tag/edit/{id}', name: 'app_admin_tag_edit')]
-    public function edit(Tag $tag, Request $request, EntityManagerInterface $entityManager): Response
+    #[Route('/admin/tag/edit/{id}', name: 'app_admin_tag_edit', methods: ['POST'])]
+    public function edit(Tag $tag, Request $request, EntityManagerInterface $entityManager): RedirectResponse
     {
-        $tagForm = $this->createForm(TagFormType::class, $tag);
+        $name = $request->request->get('name');
 
-        $tagForm->handleRequest($request);
-
-        if ($tagForm->isSubmitted() && $tagForm->isValid()) {
+        if (!empty(trim($name))) {
+            $tag->setName($name);
             $entityManager->flush();
             $this->addFlash('success', 'Le tag a été modifié avec succès.');
-
-            return $this->redirectToRoute('app_admin_interface');
+        } else {
+            $this->addFlash('error', 'Le nom du tag ne peut pas être vide.');
         }
 
-        return $this->render('admin_interface/editTag.html.twig', [
-            'tagForm' => $tagForm,
-            'tag' => $tag,
-        ]);
+        return $this->redirectToRoute('app_admin_interface');
     }
 
     #[Route('/admin/tag/delete/{id}', name: 'app_admin_tag_delete')]
@@ -76,6 +72,24 @@ final class AdminInterfaceController extends AbstractController
         $entityManager->remove($tag);
         $entityManager->flush();
         $this->addFlash('success', 'Le tag a été supprimé avec succès.');
+
+        return $this->redirectToRoute('app_admin_interface');
+    }
+
+    #[Route('/admin/tag/add', name: 'app_admin_tag_add', methods: ['POST'])]
+    public function add(Request $request, EntityManagerInterface $entityManager): RedirectResponse
+    {
+        $tag = new Tag();
+        $tagForm = $this->createForm(TagFormType::class, $tag);
+        $tagForm->handleRequest($request);
+
+        if ($tagForm->isSubmitted() && $tagForm->isValid()) {
+            $entityManager->persist($tag);
+            $entityManager->flush();
+            $this->addFlash('success', 'Le tag a été ajouté avec succès.');
+        } else {
+            $this->addFlash('error', 'Le nom du tag ne peut pas être vide.');
+        }
 
         return $this->redirectToRoute('app_admin_interface');
     }
