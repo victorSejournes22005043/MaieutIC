@@ -30,7 +30,19 @@ class UserFixtures extends Fixture
              ->setResearchTopic('Symfony Framework')
              ->setUserType(0);
 
+        $user2 = new User();
+        $user2->setEmail('user2@example.com')
+            ->setUsername('user2')
+            ->setPassword($this->passwordHasher->hashPassword($user, 'password'))
+            ->setLastName('Doe')
+            ->setFirstName('John')
+            ->setAffiliationLocation('New York, USA')
+            ->setSpecialization('Web Development')
+            ->setResearchTopic('Symfony Framework')
+            ->setUserType(1);
+
         $manager->persist($user);
+        $manager->persist($user2);
         $manager->flush();
 
         // Add reference for other fixtures

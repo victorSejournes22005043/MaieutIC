@@ -1,0 +1,64 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des Tags{% endblock %}
+
+{% block body %}
+<h1 class="text-2xl font-bold mb-4">Gestion des Tags</h1>
+
+<!-- Barre de recherche -->
+<form method="get" class="mb-4 flex space-x-2">
+    <input type="text" id="search-bar" name="search" placeholder="Rechercher un tag" value="{{ app.request.query.get('search') }}" class="w-full p-2 border border-gray-300 rounded">
+</form>
+
+<!-- Liste des tags -->
+<div id="tags-container">
+    <table class="table-auto w-full border-collapse border border-gray-300 mb-4">
+        <thead>
+            <tr class="bg-gray-100">
+                <th class="border border-gray-300 px-4 py-2">Nom</th>
+                <th class="border border-gray-300 px-4 py-2">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if tags|length > 0 %}
+                {% for tag in tags %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="border border-gray-300 px-4 py-2">{{ tag.name }}</td>
+                        <td class="border border-gray-300 px-4 py-2 space-x-2">
+                            <a href="{{ path('app_admin_tag_edit', {'id': tag.id}) }}" class="text-blue-500 hover:underline">Modifier</a>
+                            <a href="{{ path('app_admin_tag_delete', {'id': tag.id}) }}" class="text-red-500 hover:underline" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce tag ?');">Supprimer</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="3" class="text-center py-4">Aucun tag trouvé pour votre recherche.</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Formulaire d'ajout de tag -->
+<h2 class="text-xl font-bold mb-2">Ajouter un nouveau tag</h2>
+{{ form_start(tagForm, {'attr': {'class': 'space-y-4'}}) }}
+    {{ form_widget(tagForm, {'attr': {'class': 'w-full p-2 border border-gray-300 rounded'}}) }}
+    <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Ajouter</button>
+{{ form_end(tagForm) }}
+
+<script>
+    document.getElementById('search-bar').addEventListener('input', function () {
+        const query = this.value;
+        fetch(`{{ path('app_admin_interface') }}?search=${encodeURIComponent(query)}`)
+            .then(response => response.text())
+            .then(html => {
+                // Remplace le contenu du conteneur pour éviter les doublons
+                const parser = new DOMParser();
+                const newDocument = parser.parseFromString(html, 'text/html');
+                const newTagsContainer = newDocument.getElementById('tags-container');
+                document.getElementById('tags-container').innerHTML = newTagsContainer.innerHTML;
+            })
+            .catch(error => console.error('Erreur lors de la recherche des tags:', error));
+    });
+</script>
+{% endblock %}
