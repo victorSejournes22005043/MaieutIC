@@ -7,21 +7,21 @@
 {% endblock %}
 
 {% block body %}
-<div class="bg-gray-100 min-h-screen">
+<div>
     {{ render(controller('App\\Controller\\NavbarController::navbar')) }}
 
     <div class="container mx-auto py-6">
         <div class="flex justify-center space-x-4 mb-6">
-            <button class="bg-blue-700 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 active:bg-blue-900">Auteurs</button>
-            <button onclick="window.location.href='{{ path('app_library_articles') }}'" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 active:bg-gray-400">Articles</button>
-            <button onclick="window.location.href='{{ path('app_library_books') }}'" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 active:bg-gray-400">Livres</button>
+            <button class="bg-blue-800 text-white flex-grow px-4 py-2 rounded-lg font-medium hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 active:bg-blue-900">Auteurs</button>
+            <button onclick="window.location.href='{{ path('app_library_articles') }}'" class="bg-slate-100 text-gray-700 flex-grow px-4 py-2 rounded-lg font-medium hover:bg-[#e8edf1] focus:outline-none focus:ring-2 focus:ring-gray-400 active:bg-gray-400">Articles</button>
+            <button onclick="window.location.href='{{ path('app_library_books') }}'" class="bg-slate-100 text-gray-700 flex-grow px-4 py-2 rounded-lg font-medium hover:bg-[#e8edf1] focus:outline-none focus:ring-2 focus:ring-gray-400 active:bg-gray-400">Livres</button>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div class="bg-slate-100 flex flex-wrap p-4 rounded-lg">
             {% for author in authors %}
-            <div class="bg-white rounded-lg shadow-md overflow-hidden relative">
+            <div class="bg-white rounded-lg overflow-hidden relative w-44 h-72 m-4 p-3">
                 <a href="{{ author.link }}" target="_blank">
-                    <img src="{{ author.image }}" alt="{{ author.name }}" class="w-full h-40 object-cover">
+                    <img src="{{ author.image }}" alt="{{ author.name }}" class="w-full h-40 object-cover rounded-lg">
                 </a>
                 <div class="p-4">
                     <h3 class="text-lg font-semibold text-gray-800">{{ author.name }}</h3>

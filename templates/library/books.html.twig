@@ -6,77 +6,25 @@
 {% endblock %}
 
 {% block body %}
-<style>
-    .tabs {
-        display: flex;
-        justify-content: center;
-        margin-bottom: 20px;
-    }
-    .tabs button {
-        background-color: #f4f4f4;
-        border: none;
-        padding: 10px 20px;
-        cursor: pointer;
-        font-size: 16px;
-        color: #333;
-        border-radius: 5px 5px 0 0;
-        margin-right: 5px;
-    }
-    .tabs button.active {
-        background-color: #4a4a8c;
-        color: white;
-        font-weight: bold;
-    }
-    .tabs button:hover {
-        background-color: #ddd;
-    }
-    .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-        gap: 20px;
-        padding: 20px;
-    }
-    .card {
-        position: relative;
-        text-align: center;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        overflow: hidden;
-        background-color: white;
-    }
-    .card img {
-        width: 100%;
-        height: 150px;
-        object-fit: cover;
-    }
-    .card h3 {
-        margin: 10px 0 5px;
-        font-size: 16px;
-    }
-    .card p {
-        margin: 0 0 10px;
-        font-size: 14px;
-        color: gray;
-        text-align: center;
-    }
-</style>
+
 {{ render(controller('App\\Controller\\NavbarController::navbar')) }}
 
-<div>
-    <div class="tabs">
-        <button onclick="window.location.href='{{ path('app_library') }}'">Auteurs</button>
-        <button onclick="window.location.href='{{ path('app_library_articles') }}'">Articles</button>
-        <button class="active">Livres</button>
-    </div>
-
-    <div class="grid">
+<div class="container mx-auto py-6">
+    <div class="flex justify-center space-x-4 mb-6">
+            <button onclick="window.location.href='{{ path('app_library') }}'" class="bg-slate-100 text-gray-700 flex-grow px-4 py-2 rounded-lg font-medium hover:bg-[#e8edf1] focus:outline-none focus:ring-2 focus:ring-gray-400 active:bg-gray-400">Auteurs</button>
+            <button onclick="window.location.href='{{ path('app_library_articles') }}'" class="bg-slate-100 text-gray-700 flex-grow px-4 py-2 rounded-lg font-medium hover:bg-[#e8edf1] focus:outline-none focus:ring-2 focus:ring-gray-400 active:bg-gray-400">Articles</button>
+            <button class="bg-blue-800 text-white flex-grow px-4 py-2 rounded-lg font-medium hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 active:bg-blue-900">Livres</button>
+        </div>
+    <div class="bg-slate-100 flex flex-wrap p-4 rounded-lg">
         {% for book in books %}
-        <div class="card">
+        <div class="bg-white rounded-lg overflow-hidden relative w-44 h-72 m-4 p-3">
             <a href="{{ book.link }}" target="_blank">
-                <img src="{{ book.image }}" alt="{{ book.title }}">
+                <img src="{{ book.image }}" alt="{{ book.title }}" class="w-full h-40 object-cover rounded-lg">
             </a>
-            <h3>{{ book.title }}</h3>
-            <p>{{ book.author }}</p>
+            <div class="p-4">
+                <h3 class="text-lg font-semibold text-gray-800">{{ book.title }}</h3>
+                <p class="text-sm text-gray-600">{{ book.author }}</p>
+            </div>
         </div>
         {% endfor %}
     </div>
