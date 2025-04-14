@@ -8,9 +8,19 @@
         <!-- Div aligned to the right -->
         <div class="flex items-center space-x-4 ml-auto">
             {% if is_granted('IS_AUTHENTICATED_FULLY') %}
-                <!-- Display user information if user is logged in -->
-                <img src="{{ app.user.profilePictureUrl|default(asset('images/default-profile.png')) }}" alt="Profil" class="w-10 h-10 rounded-full">
-                <span class="text-black">{{ app.user.username }}</span>
+                <div class="relative flex items-center">
+                    <!-- Display user information if user is logged in -->
+                    <button id="profileDropdownButton" class="focus:outline-none">
+                        <img src="{{ app.user.profilePictureUrl|default(asset('images/default-profile.png')) }}" alt="Profil" class="w-10 h-10 rounded-full">
+                    </button>
+                    <!-- Dropdown menu -->
+                    <div id="profileDropdownMenu" class="hidden absolute top-full mt-2 w-48 bg-white rounded-lg shadow-lg z-50">
+                        <a href="{{ path('app_profile') }}" class="block px-4 py-2 text-black hover:bg-gray-100">Mon Profil</a>
+                        <a href="{{ path('app_profile') }}" class="block px-4 py-2 text-black hover:bg-gray-100">Paramètres</a>
+                        <a href="{{ path('app_logout') }}" class="block px-4 py-2 text-black hover:bg-gray-100">Se Déconnecter</a>
+                    </div>
+                </div>
+                {#<span class="text-black">{{ app.user.username }}</span>#}
             {% else %}
                 <!-- Display the sign in and login button if user is logged off -->
                 <a href="{{ path('app_login') }}" class="text-black hover:text-blue-700 hover:underline">Se connecter</a>
@@ -22,3 +32,22 @@
         </div>
     </div>
 </nav>
+
+<script>
+    // JavaScript to toggle the dropdown menu
+    document.addEventListener('DOMContentLoaded', () => {
+        const dropdownButton = document.getElementById('profileDropdownButton');
+        const dropdownMenu = document.getElementById('profileDropdownMenu');
+
+        dropdownButton.addEventListener('click', () => {
+            dropdownMenu.classList.toggle('hidden');
+        });
+
+        // Close the dropdown if clicked outside
+        document.addEventListener('click', (event) => {
+            if (!dropdownButton.contains(event.target) && !dropdownMenu.contains(event.target)) {
+                dropdownMenu.classList.add('hidden');
+            }
+        });
+    });
+</script>
