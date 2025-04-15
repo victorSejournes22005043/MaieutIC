@@ -3,6 +3,7 @@
 {% block title %}Gestion des Tags{% endblock %}
 
 {% block body %}
+{{ render(controller('App\\Controller\\NavbarController::navbar')) }}
 <h1 class="text-2xl font-bold mb-4">Gestion des Tags</h1>
 
 <!-- Barre de recherche -->
@@ -40,7 +41,7 @@
 </div>
 
 <!-- Bouton pour ouvrir le modal de création -->
-<button class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600" onclick="openCreateModal()">Ajouter un nouveau tag</button>
+<button class="bg-green-500 text-black px-4 py-2 rounded hover:bg-green-600" onclick="openCreateModal()">Ajouter un nouveau tag</button>
 
 <!-- Modal pour l'édition -->
 <div id="edit-modal" class="modal hidden">
