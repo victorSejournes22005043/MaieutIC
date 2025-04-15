@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Form\RegistrationFormType;
 use App\Entity\UserQuestions;
+use App\Repository\TagRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -16,7 +17,7 @@ use Symfony\Component\Routing\Attribute\Route;
 class RegistrationController extends AbstractController
 {
     #[Route('/register', name: 'app_register')]
-    public function register(Request $request, UserPasswordHasherInterface $userPasswordHasher, Security $security, EntityManagerInterface $entityManager): Response
+    public function register(Request $request, UserPasswordHasherInterface $userPasswordHasher, Security $security, EntityManagerInterface $entityManager, TagRepository $tagRepository): Response
     {
         $user = new User();
         // Définir les questions dynamiques
@@ -25,9 +26,7 @@ class RegistrationController extends AbstractController
             'Pourquoi avez-vous souhaité être chercheur ?',
             'Qu\'aimez vous dans la recherche ?',
             'Quels sont les problèmes de recherche auxquels vous vous intéressez ?',
-            'Quels mot-clés peuvent être reliés à votre projet en cours ?',
             'Quelles sont les méthodologies de recherche que vous utilisez dans votre domaine d\'étude ?',
-            'Si vous deviez choisir 5 mots pour vous définir en tant que chercheur (se); quels seraient-ils?',
             'Qu\'est ce qui, d\'après vous, vous a amené(e) à faire de la recherche ?',
             'Comment vous définirirez vous en tant que chercheur?',
             'Pensez-vous que ce choix ait un lien avec  un évènement de votre biographie ? (rencontre, auteur, environnement personnel, professionnel ....) et si oui pouvez-vous brièvement le/la décrire ?',
@@ -38,12 +37,21 @@ class RegistrationController extends AbstractController
             'Quelle est la phrase ou la citation qui vous représente le mieux ?',
         ];
 
-        $requiredQuestions = [3, 4, 5, 6, 13]; // Indices des questions obligatoires
+        $taggableQuestions = [
+            'Quels mot-clés peuvent être reliés à votre projet en cours ?',
+            'Si vous deviez choisir 5 mots pour vous définir en tant que chercheur (se); quels seraient-ils?',
+        ];
+
+        $requiredQuestions = [3, 4, 11, 12]; // Indices des questions obligatoires
+
+        $tags = $tagRepository->findAllOrderedByName();
 
         // Créer le formulaire et passer les questions dynamiques comme option
         $form = $this->createForm(RegistrationFormType::class, $user, [
             'dynamic_questions' => $dynamicQuestions,
             'required_questions' => $requiredQuestions,
+            'taggable_questions' => $taggableQuestions,
+            'tags' => $tags, // Passer les tags au formulaire
         ]);
 
         $form->handleRequest($request);
@@ -59,12 +67,26 @@ class RegistrationController extends AbstractController
 
             // Handle user questions
             $questions = $form->get('userQuestions')->getData();
+
             foreach ($questions as $index => $questionText) {
-                if (!empty($questionText)) {
+            if (!empty($questionText)) {
+                $userQuestion = new UserQuestions();
+                $userQuestion->setUser($user);
+                $userQuestion->setQuestion('Question ' . $index);
+                $userQuestion->setAnswer($questionText);
+
+                $entityManager->persist($userQuestion);
+            }
+            }
+
+            $taggableQuestions = $form->get('taggableQuestions')->getData();
+
+            foreach ($taggableQuestions as $index => $tagText) {
+                if (!empty($tagText)) {
                     $userQuestion = new UserQuestions();
                     $userQuestion->setUser($user);
-                    $userQuestion->setQuestion('Question ' . $index);
-                    $userQuestion->setAnswer($questionText);
+                    $userQuestion->setQuestion('Taggable Question ' . $index);
+                    $userQuestion->setAnswer($tagText->getName());
 
                     $entityManager->persist($userQuestion);
                 }
@@ -80,6 +102,7 @@ class RegistrationController extends AbstractController
         return $this->render('registration/register.html.twig', [
             'registrationForm' => $form,
             'dynamic_questions' => $dynamicQuestions, // Passer les questions au template
+            'taggable_questions' => $taggableQuestions, // Passer les questions au template
         ]);
     }
 }

@@ -10,18 +10,20 @@ use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\IsTrue;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
-
 class RegistrationFormType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $dynamicQuestions = $options['dynamic_questions'] ?? [];
         $requiredQuestions = $options['required_questions'] ?? [];
+        $taggableQuestions = $options['taggable_questions'] ?? [];
+        $tags = $options['tags'] ?? []; // Liste des tags à afficher dans les menus déroulants
 
         $builder
             ->add('email', EmailType::class, [
@@ -101,7 +103,27 @@ class RegistrationFormType extends AbstractType
                     ]),
                 ],
                 'data' => array_fill(0, count($dynamicQuestions), ''), // Pré-remplir avec des champs vides
-            ]);
+            ])
+            ->add("taggableQuestions", CollectionType::class, [
+                'entry_type' => ChoiceType::class,
+                'entry_options' => [
+                    'choices' => $tags,
+                    'placeholder' => 'Sélectionnez une option',
+                    'choice_label' => function($tag) {
+                        return $tag->getName();
+                    },
+                    'choice_value' => function($tag) {
+                        return $tag ? $tag->getId() : '';
+                    },
+                    'label' => false,
+                ],
+                'mapped' => false,
+                'allow_add' => true,
+                'required' => false,
+                'data' => array_fill(0, count($taggableQuestions), null),
+            ])
+                    
+        ;
     }
 
     public function configureOptions(OptionsResolver $resolver): void
@@ -109,7 +131,9 @@ class RegistrationFormType extends AbstractType
         $resolver->setDefaults([
             'data_class' => User::class,
             'dynamic_questions' => [],
-            'required_questions' => [], // Ajout de l'option pour les questions obligatoires
+            'required_questions' => [],
+            'taggable_questions' => [],
+            'tags' => [], // Nouvelle option pour passer la liste des tags
         ]);
     }
 }
