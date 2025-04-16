@@ -13,16 +13,14 @@ class ForumFixtures extends Fixture
     {
         // $user = $this->getReference('user1', User::class);
         $forumNames = [
-            'General Discussion',
-            'Announcements',
-            'Feedback & Suggestions',
-            'Off-Topic',
-            'Technical Support',
-            'Events & Meetups',
-            'Resources & Tools',
-            'Job Opportunities',
-            'Community Projects',
-            'Miscellaneous'
+            'Divers',
+            'Administratif',
+            'Méthodologie cantitative',
+            'Méthodologie calitative',
+            'Méthodologie mixte',
+            'Auteurs',
+            'Oeuvres',
+            'Détente'
         ];
 
         // Create 10 forums with a reference to the user
@@ -33,9 +31,9 @@ class ForumFixtures extends Fixture
                   ->setLastActivity(new \DateTime());
 
             $manager->persist($forum);
+
+            $this->addReference("forum" . ($i + 1), $forum);
         }
         $manager->flush();
-
-        $this->addReference('forum1', $forum);
     }
 }

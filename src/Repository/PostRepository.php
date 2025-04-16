@@ -16,12 +16,21 @@ class PostRepository extends ServiceEntityRepository
         parent::__construct($registry, Post::class);
     }
 
-    public function findByForum($forumId): array
+    public function findByForum($forumName): array
     {
         return $this->createQueryBuilder('p')
-            ->andWhere('p.forum = :forumId')
-            ->setParameter('forumId', $forumId)
+            ->innerJoin('p.forum', 'f')
+            ->where('f.title = :forumName')
+            ->setParameter('forumName', $forumName)
             ->orderBy('p.creationDate', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findAllOrderedByName(): array
+    {
+        return $this->createQueryBuilder('p')
+            ->orderBy('p.name', 'ASC')
             ->getQuery()
             ->getResult();
     }
