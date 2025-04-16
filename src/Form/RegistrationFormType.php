@@ -108,7 +108,7 @@ class RegistrationFormType extends AbstractType
                 'entry_type' => ChoiceType::class,
                 'entry_options' => [
                     'choices' => $tags,
-                    'placeholder' => 'Sélectionnez une option',
+                    'placeholder' => 'Sélectionnez un mot-clé',
                     'choice_label' => function($tag) {
                         return $tag->getName();
                     },

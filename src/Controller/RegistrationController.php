@@ -79,18 +79,21 @@ class RegistrationController extends AbstractController
             }
             }
 
-            $taggableQuestions = $form->get('taggableQuestions')->getData();
+            $taggableRaw = $request->request->all('registration_form')['taggableQuestions'] ?? [];
 
-            foreach ($taggableQuestions as $index => $tagText) {
-                if (!empty($tagText)) {
-                    $userQuestion = new UserQuestions();
-                    $userQuestion->setUser($user);
-                    $userQuestion->setQuestion('Taggable Question ' . $index);
-                    $userQuestion->setAnswer($tagText->getName());
-
-                    $entityManager->persist($userQuestion);
+            foreach ($taggableRaw as $index => $ids) {
+                foreach ($ids as $tagId) {
+                    $tag = $tagRepository->find($tagId);
+                    if ($tag) {
+                        $userQuestion = new UserQuestions();
+                        $userQuestion->setUser($user);
+                        $userQuestion->setQuestion("Taggable Question $index");
+                        $userQuestion->setAnswer($tag->getName());
+                        $entityManager->persist($userQuestion);
+                    }
                 }
             }
+
 
             $entityManager->flush();
 
