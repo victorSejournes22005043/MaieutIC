@@ -44,6 +44,8 @@ class RegistrationController extends AbstractController
 
         $requiredQuestions = [3, 4, 11, 12]; // Indices des questions obligatoires
 
+        $taggableMinChoices = [2, 2]; // Par exemple, 2 tags minimum pour chaque question taggable
+
         $tags = $tagRepository->findAllOrderedByName();
 
         // Créer le formulaire et passer les questions dynamiques comme option
@@ -51,6 +53,7 @@ class RegistrationController extends AbstractController
             'dynamic_questions' => $dynamicQuestions,
             'required_questions' => $requiredQuestions,
             'taggable_questions' => $taggableQuestions,
+            'taggable_min_choices' => $taggableMinChoices,
             'tags' => $tags, // Passer les tags au formulaire
         ]);
 

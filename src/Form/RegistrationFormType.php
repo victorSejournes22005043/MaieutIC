@@ -24,6 +24,7 @@ class RegistrationFormType extends AbstractType
         $requiredQuestions = $options['required_questions'] ?? [];
         $taggableQuestions = $options['taggable_questions'] ?? [];
         $tags = $options['tags'] ?? []; // Liste des tags à afficher dans les menus déroulants
+        $taggableMinChoices = $options['taggable_min_choices'] ?? []; // Tableau d'entiers (min par question)
 
         $builder
             ->add('email', EmailType::class, [
@@ -94,7 +95,7 @@ class RegistrationFormType extends AbstractType
                         'callback' => function ($questions, $context) use ($requiredQuestions) {
                             foreach ($requiredQuestions as $index) {
                                 if (empty($questions[$index])) {
-                                    $context->buildViolation('This question is required.')
+                                    $context->buildViolation('Cette question est obligatoire.')
                                         ->atPath("[$index]")
                                         ->addViolation();
                                 }
@@ -124,6 +125,23 @@ class RegistrationFormType extends AbstractType
                 'allow_add' => true,
                 'required' => false,
                 'data' => array_fill(0, count($taggableQuestions), []), // Tableau vide pour chaque question
+                'constraints' => [
+                    new \Symfony\Component\Validator\Constraints\Callback([
+                        'callback' => function ($taggable, $context) use ($taggableMinChoices) {
+                            foreach ($taggableMinChoices as $index => $min) {
+                                if (
+                                    isset($taggable[$index]) &&
+                                    is_array($taggable[$index]) &&
+                                    count(array_filter($taggable[$index])) < $min
+                                ) {
+                                    $context->buildViolation("Veuillez sélectionner au moins $min tag(s) pour cette question.")
+                                        ->atPath("[$index]")
+                                        ->addViolation();
+                                }
+                            }
+                        }
+                    ])
+                ],
             ])
                     
         ;
@@ -137,6 +155,7 @@ class RegistrationFormType extends AbstractType
             'required_questions' => [],
             'taggable_questions' => [],
             'tags' => [], // Nouvelle option pour passer la liste des tags
+            'taggable_min_choices' => [], // Tableau d'entiers, min par question taggable
         ]);
     }
 }

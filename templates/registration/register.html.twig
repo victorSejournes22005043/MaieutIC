@@ -66,7 +66,7 @@
             </div>
 
             <div class="mt-10">
-                <h3 class="text-xl font-bold text-gray-900 mb-6">Additional Questions</h3>
+                <h3 class="text-xl font-bold text-gray-900 mb-6">Questions additionnelles</h3>
 
                 {% for question, field in registrationForm.userQuestions %}
                     <div class="mt-5 group">
@@ -86,7 +86,7 @@
                             'class': 'block w-full rounded-xl border border-gray-200 shadow-sm px-4 py-3',
                             'multiple': false
                         }}) }}
-
+                        {{ form_errors(field) }}
                         <div class="selected-tags mt-2 flex flex-wrap gap-2"></div>
                     </div>
                 {% endfor %}
@@ -95,7 +95,7 @@
 
         <div class="mt-8">
             <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-base font-medium text-white bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transform transition-all hover:-translate-y-0.5">
-                Create Account
+                Créer mon compte !
             </button>
         </div>
         {{ form_end(registrationForm) }}
