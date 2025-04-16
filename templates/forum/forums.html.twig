@@ -8,7 +8,7 @@
 </head>
 <body>
     {{ render(controller('App\\Controller\\NavbarController::navbar')) }}
-    <div class="flex flex-row justify-center my-11">
+    <div class="flex flex-row justify-center items-start my-11">
         {# Forum categories #}
         <div class="bg-[#EEF1F3] m-5 p-2 rounded-lg">
             <div class="bg-white rounded-lg p-2">
@@ -17,9 +17,17 @@
                     <div class="bg-[#99AFDD] h-1 rounded-full my-1 w-full"></div>
                 </div>
                 <div class="flex flex-col">
-                    <a href="General" class="p-1 w-full hover:bg-blue-100 hover:text-blue-900">Toutes categories</a>
+                    {% if category == "General" %}
+                        <a href="General" class="p-1 w-full bg-blue-100 text-blue-900">Toutes categories</a>
+                    {% else %}
+                        <a href="General" class="p-1 w-full hover:bg-blue-100 hover:text-blue-900">Toutes categories</a>
+                    {% endif %}
                     {% for forum in forums %}
-                        <a href="{{ forum.title }}" class="p-1 w-full hover:bg-blue-100 hover:text-blue-900"><h3>{{ forum.title }}</h3></a>
+                        {% if category == forum.title %}
+                            <a href="{{ forum.title }}" class="p-1 w-full bg-blue-100 text-blue-900"><h3>{{ forum.title }}</h3></a>
+                        {% else %}
+                            <a href="{{ forum.title }}" class="p-1 w-full hover:bg-blue-100 hover:text-blue-900"><h3>{{ forum.title }}</h3></a>
+                        {% endif %}
                     {% endfor %}
                 </div>
             </div>
