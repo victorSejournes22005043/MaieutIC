@@ -23,7 +23,10 @@
                 {#<span class="text-black">{{ app.user.username }}</span>#}
             {% else %}
                 <!-- Display the sign in and login button if user is logged off -->
-                <a href="{{ path('app_login') }}" class="text-black hover:text-blue-700 hover:underline">Se connecter</a>
+                <button type="button" id="openLoginModal"
+                    class="text-black hover:text-blue-700 hover:underline">
+                    Se connecter
+                </button>
                 <button type="button" onclick="window.location.href='{{ path('app_register') }}'"
                     class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
                     S'inscrire
@@ -33,21 +36,45 @@
     </div>
 </nav>
 
+{% include 'components/_login_modal.html.twig' %}
+
 <script>
     // JavaScript to toggle the dropdown menu
     document.addEventListener('DOMContentLoaded', () => {
         const dropdownButton = document.getElementById('profileDropdownButton');
         const dropdownMenu = document.getElementById('profileDropdownMenu');
 
-        dropdownButton.addEventListener('click', () => {
-            dropdownMenu.classList.toggle('hidden');
-        });
+        if (dropdownButton && dropdownMenu) {
+            dropdownButton.addEventListener('click', () => {
+                dropdownMenu.classList.toggle('hidden');
+            });
 
-        // Close the dropdown if clicked outside
-        document.addEventListener('click', (event) => {
-            if (!dropdownButton.contains(event.target) && !dropdownMenu.contains(event.target)) {
-                dropdownMenu.classList.add('hidden');
-            }
-        });
+            // Close the dropdown if clicked outside
+            document.addEventListener('click', (event) => {
+                if (!dropdownButton.contains(event.target) && !dropdownMenu.contains(event.target)) {
+                    dropdownMenu.classList.add('hidden');
+                }
+            });
+        }
+
+        // Login Modal logic
+        const openLoginModalBtn = document.getElementById('openLoginModal');
+        const loginModal = document.getElementById('loginModal');
+        const closeLoginModalBtn = document.getElementById('closeLoginModal');
+
+        if (openLoginModalBtn && loginModal && closeLoginModalBtn) {
+            openLoginModalBtn.addEventListener('click', () => {
+                loginModal.classList.remove('hidden');
+            });
+            closeLoginModalBtn.addEventListener('click', () => {
+                loginModal.classList.add('hidden');
+            });
+            // Close modal when clicking outside the modal content
+            loginModal.addEventListener('click', (e) => {
+                if (e.target === loginModal) {
+                    loginModal.classList.add('hidden');
+                }
+            });
+        }
     });
 </script>
