@@ -79,9 +79,12 @@ class RegistrationController extends AbstractController
             }
             }
 
-            $taggableRaw = $request->request->all('registration_form')['taggableQuestions'] ?? [];
+            $taggableRaw = $form->get('taggableQuestions')->getData() ?? [];
 
             foreach ($taggableRaw as $index => $ids) {
+                if (!is_array($ids)) {
+                    $ids = $ids ? [$ids] : [];
+                }
                 foreach ($ids as $tagId) {
                     $tag = $tagRepository->find($tagId);
                     if ($tag) {
@@ -93,7 +96,6 @@ class RegistrationController extends AbstractController
                     }
                 }
             }
-
 
             $entityManager->flush();
 

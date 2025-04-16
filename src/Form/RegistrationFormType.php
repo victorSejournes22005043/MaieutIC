@@ -116,11 +116,15 @@ class RegistrationFormType extends AbstractType
                         return $tag ? $tag->getId() : '';
                     },
                     'label' => false,
+                    'multiple' => true, // Permet la sélection multiple
+                    'attr' => [
+                        'multiple' => 'multiple', // Pour le rendu HTML (utile si JS désactivé)
+                    ],
                 ],
                 'mapped' => false,
                 'allow_add' => true,
                 'required' => false,
-                'data' => array_fill(0, count($taggableQuestions), null),
+                'data' => array_fill(0, count($taggableQuestions), []), // Tableau vide pour chaque question
             ])
                     
         ;
