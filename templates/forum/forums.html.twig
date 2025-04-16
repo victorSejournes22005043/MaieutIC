@@ -18,13 +18,13 @@
                 </div>
                 <div class="flex flex-col">
                     {% if category == "General" %}
-                        <a href="General" class="p-1 w-full bg-blue-100 text-blue-900">Toutes categories</a>
+                        <a href="General" class="p-1 w-full font-semibold bg-blue-100 text-blue-900">Toutes categories</a>
                     {% else %}
                         <a href="General" class="p-1 w-full hover:bg-blue-100 hover:text-blue-900">Toutes categories</a>
                     {% endif %}
                     {% for forum in forums %}
                         {% if category == forum.title %}
-                            <a href="{{ forum.title }}" class="p-1 w-full bg-blue-100 text-blue-900"><h3>{{ forum.title }}</h3></a>
+                            <a href="{{ forum.title }}" class="p-1 w-full font-semibold bg-blue-100 text-blue-900"><h3>{{ forum.title }}</h3></a>
                         {% else %}
                             <a href="{{ forum.title }}" class="p-1 w-full hover:bg-blue-100 hover:text-blue-900"><h3>{{ forum.title }}</h3></a>
                         {% endif %}
@@ -35,10 +35,27 @@
         {# Forum list #}
         <ul class="bg-[#EEF1F3] m-5 p-5 rounded-lg w-full max-w-5xl">
             <h1 class="text-2xl">Forums</h1>
+
             {% for post in posts %}
                 <li>
-                    <a><h3>{{ post.name }}</h3></a>
-                    <p>{{ post.forum.title }}</p>
+                    <div class="relative group pl-12 cursor-pointer m-2">
+                        {# Pink background bar #}
+                        <div class="absolute top-0 left-0 h-full w-14 bg-blue-800 rounded-lg flex items-center justify-center">
+                            <p class="mb-2 mr-2 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-150 text-white text-3xl font-semibold font-">
+                                ›
+                            </p>
+                        </div>
+                        <div class="absolute top-0 left-3 h-full w-20 bg-white group-hover:left-11 rounded-lg transition-all z-10 duration-150"></div>
+
+                        {# Content #}
+                        <div class="flex items-center bg-white px-2 py-3 rounded-md relative z-10">
+                            <div class="w-1/2">
+                                <h3>{{ post.name }}</h3>
+                                <p>{{ post.user.firstName }} {{ post.user.lastName}}</p>
+                            </div>
+                            <p>{{ post.forum.title }}</p>
+                        </div>
+                    </div>
                 </li>
             {% endfor %}
         </ul>
