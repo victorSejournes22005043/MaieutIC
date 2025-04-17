@@ -18,7 +18,7 @@ class UserQuestions
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
-    #[ORM\Column(type: 'string', length: 10)]
+    #[ORM\Column(type: 'string', length: 200)]
     private ?string $question = null;
 
     #[ORM\Column(type: 'string', length: 5000)]

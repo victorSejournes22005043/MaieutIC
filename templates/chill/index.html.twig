@@ -1,20 +1,37 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello ChillController!{% endblock %}
+{% block title %}resources Chill{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
-
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
-
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>D:/Users/User/Documents/Etudes/BUT info/3eme année/stage/MaieutIC/src/Controller/ChillController.php</code></li>
-        <li>Your template at <code>D:/Users/User/Documents/Etudes/BUT info/3eme année/stage/MaieutIC/templates/chill/index.html.twig</code></li>
+{{ render(controller('App\\Controller\\NavbarController::navbar')) }}
+<div class="mx-auto my-8 max-w-3xl w-11/12 bg-gray-50 rounded-xl shadow-md p-8">
+    <h1 class="text-3xl font-bold mb-2 text-blue-900">Gestion du stress / Sophrologie</h1>
+    <div class="text-gray-600 mb-6">
+        Retrouvez ici une sélection de resources pour vous détendre et prendre soin de vous.
+    </div>
+    <ul class="space-y-5">
+        {% for resource in resources %}
+            <li class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
+                <div class="text-xl font-semibold text-blue-800 mb-1">{{ resource.title }}</div>
+                <div class="text-gray-700 mb-3">{{ resource.description }}</div>
+                {% if resource.link %}
+                    {% set youtube_id = null %}
+                    {% if 'youtube.com/watch?v=' in resource.link %}
+                        {% set youtube_id = resource.link|split('v=')[1]|split('&')[0] %}
+                    {% elseif 'youtu.be/' in resource.link %}
+                        {% set youtube_id = resource.link|split('youtu.be/')[1]|split('?')[0] %}
+                    {% endif %}
+                    {% if youtube_id %}
+                        <a href="{{ resource.link }}" target="_blank" class="block mb-2">
+                            <img src="https://img.youtube.com/vi/{{ youtube_id }}/hqdefault.jpg" alt="Miniature YouTube" class="rounded-md w-full max-w-xs mx-auto mb-2 shadow" />
+                        </a>
+                    {% endif %}
+                    <a href="{{ resource.link }}" target="_blank" class="text-blue-600 hover:underline">Voir la resource</a>
+                {% endif %}
+            </li>
+        {% else %}
+            <li>Aucune resource disponible pour le moment.</li>
+        {% endfor %}
     </ul>
 </div>
 {% endblock %}

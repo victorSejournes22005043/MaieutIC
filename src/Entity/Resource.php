@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use App\Entity\User;
 
 #[ORM\Entity]
 class Resource
@@ -21,8 +22,12 @@ class Resource
     #[ORM\Column(length: 255)]
     private ?string $link = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $image = null;
+    #[ORM\Column(length: 50)]
+    private ?string $page = null;
+
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $user = null;
 
     public function getId(): ?int
     {
@@ -65,15 +70,26 @@ class Resource
         return $this;
     }
 
-    public function getImage(): ?string
+    public function getPage(): ?string
     {
-        return $this->image;
+        return $this->page;
     }
 
-    public function setImage(?string $image): static
+    public function setPage(string $page): static
     {
-        $this->image = $image;
+        $this->page = $page;
 
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(User $user): static
+    {
+        $this->user = $user;
         return $this;
     }
 }

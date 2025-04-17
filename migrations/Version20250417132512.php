@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20250408140939 extends AbstractMigration
+final class Version20250417132512 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -27,8 +27,8 @@ final class Version20250408140939 extends AbstractMigration
         $this->addSql('CREATE TABLE comment (id INT AUTO_INCREMENT NOT NULL, body VARCHAR(5000) NOT NULL, creation_date DATE NOT NULL, user_id INT NOT NULL, post_id INT NOT NULL, INDEX IDX_9474526CA76ED395 (user_id), INDEX IDX_9474526C4B89032C (post_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci`');
         $this->addSql('CREATE TABLE forum (id INT AUTO_INCREMENT NOT NULL, title VARCHAR(500) NOT NULL, body VARCHAR(5000) NOT NULL, last_activity DATE NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci`');
         $this->addSql('CREATE TABLE post (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(100) NOT NULL, description VARCHAR(5000) NOT NULL, creation_date DATE NOT NULL, last_activity DATE NOT NULL, user_id INT NOT NULL, forum_id INT NOT NULL, INDEX IDX_5A8A6C8DA76ED395 (user_id), INDEX IDX_5A8A6C8D29CCBAD0 (forum_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci`');
-        $this->addSql('CREATE TABLE resource (id INT AUTO_INCREMENT NOT NULL, title VARCHAR(255) NOT NULL, description LONGTEXT DEFAULT NULL, link VARCHAR(255) NOT NULL, image VARCHAR(255) DEFAULT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci`');
-        $this->addSql('CREATE TABLE tag (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(255) NOT NULL, UNIQUE INDEX UNIQ_TAG_NAME (name), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci`');
+        $this->addSql('CREATE TABLE resource (id INT AUTO_INCREMENT NOT NULL, title VARCHAR(255) NOT NULL, description LONGTEXT DEFAULT NULL, link VARCHAR(255) NOT NULL, page VARCHAR(50) NOT NULL, user_id INT NOT NULL, INDEX IDX_BC91F416A76ED395 (user_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci`');
+        $this->addSql('CREATE TABLE tag (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(255) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci`');
         $this->addSql('CREATE TABLE taggable (id INT AUTO_INCREMENT NOT NULL, entity_id INT NOT NULL, entity_type VARCHAR(50) NOT NULL, tag_id INT NOT NULL, INDEX IDX_6243ADB9BAD26311 (tag_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci`');
         $this->addSql('CREATE TABLE user (id INT AUTO_INCREMENT NOT NULL, email VARCHAR(180) NOT NULL, username VARCHAR(180) NOT NULL, last_name VARCHAR(100) NOT NULL, first_name VARCHAR(100) NOT NULL, affiliation_location VARCHAR(250) DEFAULT NULL, specialization VARCHAR(250) DEFAULT NULL, research_topic VARCHAR(250) DEFAULT NULL, roles JSON NOT NULL, password VARCHAR(255) NOT NULL, user_type INT NOT NULL, UNIQUE INDEX UNIQ_8D93D649E7927C74 (email), UNIQUE INDEX UNIQ_8D93D649F85E0677 (username), UNIQUE INDEX UNIQ_IDENTIFIER_ID (id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci`');
         $this->addSql('CREATE TABLE Subscription (user_id INT NOT NULL, post_id INT NOT NULL, INDEX IDX_BBF7BF2BA76ED395 (user_id), INDEX IDX_BBF7BF2B4B89032C (post_id), PRIMARY KEY(user_id, post_id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci`');
@@ -39,6 +39,7 @@ final class Version20250408140939 extends AbstractMigration
         $this->addSql('ALTER TABLE comment ADD CONSTRAINT FK_9474526C4B89032C FOREIGN KEY (post_id) REFERENCES post (id)');
         $this->addSql('ALTER TABLE post ADD CONSTRAINT FK_5A8A6C8DA76ED395 FOREIGN KEY (user_id) REFERENCES user (id)');
         $this->addSql('ALTER TABLE post ADD CONSTRAINT FK_5A8A6C8D29CCBAD0 FOREIGN KEY (forum_id) REFERENCES forum (id)');
+        $this->addSql('ALTER TABLE resource ADD CONSTRAINT FK_BC91F416A76ED395 FOREIGN KEY (user_id) REFERENCES user (id)');
         $this->addSql('ALTER TABLE taggable ADD CONSTRAINT FK_6243ADB9BAD26311 FOREIGN KEY (tag_id) REFERENCES tag (id)');
         $this->addSql('ALTER TABLE Subscription ADD CONSTRAINT FK_BBF7BF2BA76ED395 FOREIGN KEY (user_id) REFERENCES user (id) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE Subscription ADD CONSTRAINT FK_BBF7BF2B4B89032C FOREIGN KEY (post_id) REFERENCES post (id) ON DELETE CASCADE');
@@ -55,6 +56,7 @@ final class Version20250408140939 extends AbstractMigration
         $this->addSql('ALTER TABLE comment DROP FOREIGN KEY FK_9474526C4B89032C');
         $this->addSql('ALTER TABLE post DROP FOREIGN KEY FK_5A8A6C8DA76ED395');
         $this->addSql('ALTER TABLE post DROP FOREIGN KEY FK_5A8A6C8D29CCBAD0');
+        $this->addSql('ALTER TABLE resource DROP FOREIGN KEY FK_BC91F416A76ED395');
         $this->addSql('ALTER TABLE taggable DROP FOREIGN KEY FK_6243ADB9BAD26311');
         $this->addSql('ALTER TABLE Subscription DROP FOREIGN KEY FK_BBF7BF2BA76ED395');
         $this->addSql('ALTER TABLE Subscription DROP FOREIGN KEY FK_BBF7BF2B4B89032C');
