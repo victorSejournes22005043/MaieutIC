@@ -9,6 +9,12 @@
     <div class="text-gray-600 mb-6">
         Retrouvez ici une sélection de resources pour vous détendre et prendre soin de vous.
     </div>
+    {# Ajout du bouton si user connecté et userType == 1 #}
+    {% if app.user and app.user.userType == 1 %}
+        <div class="mb-6">
+            <button class="inline-block px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition" onclick="openResourceCreateModal()">Ajouter une resource</button>
+        </div>
+    {% endif %}
     <ul class="space-y-5">
         {% for resource in resources %}
             <li class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
@@ -34,4 +40,64 @@
         {% endfor %}
     </ul>
 </div>
+
+{# Modal pour la création de resource #}
+{% if app.user and app.user.userType == 1 %}
+<div id="resource-create-modal" class="modal hidden">
+    <div class="modal-content">
+        <span class="close" onclick="closeResourceCreateModal()">&times;</span>
+        <h2 class="text-xl font-bold mb-4">Ajouter une resource</h2>
+        {{ form_start(form, {'attr': {'id': 'resource-create-form', 'class': 'space-y-4'}, 'action': path('app_chill_resource_add')}) }}
+            {{ form_widget(form, {'attr': {'class': 'w-full p-2 border border-gray-300 rounded'}}) }}
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Ajouter</button>
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endif %}
+
+<style>
+    .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .modal-content {
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        position: relative;
+    }
+
+    .close {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 1.5rem;
+        cursor: pointer;
+    }
+
+    .hidden {
+        display: none;
+    }
+</style>
+
+<script>
+    function openResourceCreateModal() {
+        document.getElementById('resource-create-modal').classList.remove('hidden');
+    }
+    function closeResourceCreateModal() {
+        document.getElementById('resource-create-modal').classList.add('hidden');
+    }
+</script>
 {% endblock %}
