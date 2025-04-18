@@ -23,7 +23,7 @@
                 {#<span class="text-black">{{ app.user.username }}</span>#}
             {% else %}
                 <!-- Display the sign in and login button if user is logged off -->
-                <button type="button" id="openLoginModal"
+                <button type="button" onclick="window.location.href='{{ path('app_login') }}'"
                     class="text-black hover:text-blue-800">
                     Se connecter
                 </button>
@@ -36,7 +36,7 @@
     </div>
 </nav>
 
-{% include 'components/_login_modal.html.twig' %}
+{# Suppression de l'inclusion du composant modal #}
 
 <script>
     // JavaScript to toggle the dropdown menu
@@ -53,26 +53,6 @@
             document.addEventListener('click', (event) => {
                 if (!dropdownButton.contains(event.target) && !dropdownMenu.contains(event.target)) {
                     dropdownMenu.classList.add('hidden');
-                }
-            });
-        }
-
-        // Login Modal logic
-        const openLoginModalBtn = document.getElementById('openLoginModal');
-        const loginModal = document.getElementById('loginModal');
-        const closeLoginModalBtn = document.getElementById('closeLoginModal');
-
-        if (openLoginModalBtn && loginModal && closeLoginModalBtn) {
-            openLoginModalBtn.addEventListener('click', () => {
-                loginModal.classList.remove('hidden');
-            });
-            closeLoginModalBtn.addEventListener('click', () => {
-                loginModal.classList.add('hidden');
-            });
-            // Close modal when clicking outside the modal content
-            loginModal.addEventListener('click', (e) => {
-                if (e.target === loginModal) {
-                    loginModal.classList.add('hidden');
                 }
             });
         }
