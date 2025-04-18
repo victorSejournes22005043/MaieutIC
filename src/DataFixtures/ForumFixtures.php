@@ -15,8 +15,8 @@ class ForumFixtures extends Fixture
         $forumNames = [
             'Divers',
             'Administratif',
-            'Méthodologie cantitative',
-            'Méthodologie calitative',
+            'Méthodologie quantitative',
+            'Méthodologie qualitative',
             'Méthodologie mixte',
             'Auteurs',
             'Oeuvres',
