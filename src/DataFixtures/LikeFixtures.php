@@ -19,8 +19,7 @@ class LikeFixtures extends Fixture implements DependentFixtureInterface
 
         $userLike = new UserLike();
         $userLike->setUser($user)
-             ->setComment($comment)
-             ->setIsLike(true);
+             ->setComment($comment);
 
         $manager->persist($comment);
         $manager->persist($userLike);

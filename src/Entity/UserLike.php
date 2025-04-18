@@ -21,8 +21,6 @@ class UserLike
     #[ORM\JoinColumn(nullable: false)]
     private ?Comment $comment = null;
 
-    #[ORM\Column(type: 'boolean')]
-    private bool $isLike;
 
     public function getId(): ?int
     {
@@ -49,18 +47,6 @@ class UserLike
     public function setComment(?Comment $comment): static
     {
         $this->comment = $comment;
-
-        return $this;
-    }
-
-    public function getIsLike(): bool
-    {
-        return $this->isLike;
-    }
-
-    public function setIsLike(bool $isLike): static
-    {
-        $this->isLike = $isLike;
 
         return $this;
     }
