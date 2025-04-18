@@ -6,6 +6,18 @@
 {{ render(controller('App\\Controller\\NavbarController::navbar')) }}
 <div class="mx-auto my-8 max-w-3xl w-11/12 bg-gray-50 rounded-xl shadow-md p-8">
     <h1 class="text-3xl font-bold mb-2 text-blue-900">Méthodologie</h1>
+    <div class="mb-4 flex flex-wrap gap-3">
+        {% set forums = [
+            {'name': 'Méthodologie mixte', 'slug': 'Méthodologie%20mixte'},
+            {'name': 'Méthodologie qualitative', 'slug': 'Méthodologie%20qualitative'},
+            {'name': 'Méthodologie quantitative', 'slug': 'Méthodologie%20quantitative'}
+        ] %}
+        {% for forum in forums %}
+            <a href="/forums/{{ forum.slug }}" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition">
+                Aller au forum {{ forum.name|lower }}
+            </a>
+        {% endfor %}
+    </div>
     <div class="text-gray-600 mb-6">
         Retrouvez ici une sélection de ressources pour vous aider à mieux comprendre la méthodologie de travail et les outils que nous utilisons.
     </div>
