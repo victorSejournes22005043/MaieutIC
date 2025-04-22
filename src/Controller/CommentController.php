@@ -13,7 +13,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class CommentController extends AbstractController
 {
-    #[Route('/posts/{post_id}/comments', name: 'app_comments')]
+    /*#[Route('/posts/{post_id}/comments', name: 'app_comments')]
     public function index(int $post_id, EntityManagerInterface $entityManager): Response
     {
         $post = $entityManager->getRepository(Post::class)->find($post_id);
@@ -28,7 +28,7 @@ class CommentController extends AbstractController
             'post' => $post,
             'comments' => $comments,
         ]);
-    }
+    }*/
 
     #[Route('/posts/{post_id}/add-comment', name: 'app_add_comment')]
     public function addComment(int $post_id, Request $request, EntityManagerInterface $entityManager): Response
