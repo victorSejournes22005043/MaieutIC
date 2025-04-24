@@ -1,0 +1,37 @@
+{% if app.user and app.user.userType == 1 %}
+<!-- MODAL BACKDROP + CONTAINER -->
+<div id="author-edit-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6 relative">
+        <button class="absolute top-2 right-2 text-gray-500 hover:text-gray-700" onclick="closeAuthorEditModal()">
+            &times;
+        </button>
+
+        <h2 class="text-xl font-bold mb-4">Modifier un auteur</h2>
+        <form id="author-edit-form" method="post" action="" class="space-y-4">
+            <input type="text" id="author-edit-name" name="name" placeholder="Nom" class="w-full p-2 border border-gray-300 rounded">
+            <input type="text" id="author-edit-birthYear" name="birthYear" placeholder="Année de naissance" class="w-full p-2 border border-gray-300 rounded">
+            <input type="text" id="author-edit-deathYear" name="deathYear" placeholder="Année de décès" class="w-full p-2 border border-gray-300 rounded">
+            <input type="text" id="author-edit-nationality" name="nationality" placeholder="Nationalité" class="w-full p-2 border border-gray-300 rounded">
+            <input type="text" id="author-edit-link" name="link" placeholder="Lien" class="w-full p-2 border border-gray-300 rounded">
+            <input type="text" id="author-edit-image" name="image" placeholder="URL de l'image" class="w-full p-2 border border-gray-300 rounded">
+            <button type="submit" class="bg-blue-600 text-white w-full py-2 rounded hover:bg-blue-700 transition">Enregistrer</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openAuthorEditModal(id, name, birthYear, deathYear, nationality, link, image) {
+        document.getElementById('author-edit-modal').classList.remove('hidden');
+        const editUrl = `{{ path('app_author_edit', {'id': 'PLACEHOLDER'}) }}`.replace('PLACEHOLDER', id);
+        document.getElementById('author-edit-form').action = editUrl;
+
+        document.getElementById('author-edit-name').value = name;
+        document.getElementById('author-edit-birthYear').value = birthYear;
+        document.getElementById('author-edit-deathYear').value = deathYear;
+        document.getElementById('author-edit-nationality').value = nationality;
+        document.getElementById('author-edit-link').value = link;
+        document.getElementById('author-edit-image').value = image;
+    }
+
+</script>
+{% endif %}

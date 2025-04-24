@@ -1,7 +1,7 @@
 {% if app.user and app.user.userType == 1 %}
-<div id="resource-create-modal" class="modal hidden">
-    <div class="modal-content">
-        <span class="close" onclick="closeResourceCreateModal()">&times;</span>
+<div id="resource-create-modal" class="fixed inset-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-[1000] hidden">
+    <div class="bg-white p-5 rounded-lg w-[90%] max-w-[500px] shadow-lg relative">
+        <span class="absolute top-2 right-2 text-2xl cursor-pointer" onclick="closeResourceCreateModal()">&times;</span>
         <h2 class="text-xl font-bold mb-4">Ajouter une resource</h2>
         {{ form_start(form, {'attr': {'id': 'resource-create-form', 'class': 'space-y-4'}, 'action': path('app_resource_add', {'page': page})}) }}
             {{ form_widget(form, {'attr': {'class': 'w-full p-2 border border-gray-300 rounded'}}) }}
@@ -9,39 +9,6 @@
         {{ form_end(form) }}
     </div>
 </div>
-<style>
-    .modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-    }
-    .modal-content {
-        background-color: white;
-        padding: 20px;
-        border-radius: 8px;
-        width: 90%;
-        max-width: 500px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        position: relative;
-    }
-    .close {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        font-size: 1.5rem;
-        cursor: pointer;
-    }
-    .hidden {
-        display: none;
-    }
-</style>
 <script>
     function openResourceCreateModal() {
         document.getElementById('resource-create-modal').classList.remove('hidden');
