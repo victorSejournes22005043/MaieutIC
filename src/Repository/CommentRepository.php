@@ -16,6 +16,29 @@ class CommentRepository extends ServiceEntityRepository
         parent::__construct($registry, Comment::class);
     }
 
+    public function findByPost($postId): array
+    {
+        return $this->createQueryBuilder('c')
+            ->innerJoin('c.post', 'p')
+            ->where('p.id = :postId')
+            ->setParameter('postId', $postId)
+            ->orderBy('c.creationDate', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function addComment($body, $post, $user): void
+    {
+        $comment = new Comment();
+        $comment->setBody($body);
+        $comment->setPost($post);
+        $comment->setUser($user);
+        $comment->setCreationDate(new \DateTime());
+
+        $this->getEntityManager()->persist($comment);
+        $this->getEntityManager()->flush();
+    }
+
     //    /**
     //     * @return Comment[] Returns an array of Comment objects
     //     */

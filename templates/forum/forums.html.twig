@@ -45,6 +45,30 @@
                         <p>{{ selectedPost.description }}</p>
                     </div>
                 </div>
+                <div class="mt-5">
+                    <h3 class="text-xl font-semibold">{{ comments|length }} commentaires</h3>
+                    {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+                        <form action="{{ path('app_forums', { category: category, postId: selectedPost.id }) }}" method="post" class="mt-5">
+                            <textarea name="comment" rows="4" class="w-full p-2 border rounded-lg" placeholder="Ajouter un commentaire..."></textarea>
+                            <button type="submit" class="mt-2 bg-blue-500 text-white px-4 py-2 rounded-lg">Commenter</button>
+                        </form>
+                    {% else %}
+                        <button onclick="window.location.href='{{ path('app_login') }}'" class="text-white bg-blue-800 mt-2 p-1 rounded-lg">+ Ajouter un commentaire</button>
+                    {% endif %}
+                    {# Display comments #}
+                    {% for i, comment in comments %}
+                        <div class="flex flex-row items-center w-full my-2">
+                            <a class="flex flex-col items-center text-gray-500 w-8 mx-2">
+                                <p>♥</p>
+                                <p>{{ likes[i] }}</p>
+                            </a>
+                            <div class="bg-white p-3 rounded-lg w-full">
+                                <p><strong>{{ comment.user.firstName }} {{ comment.user.lastName }}</strong></p>
+                                <p>{{ comment.body }}</p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
             {% else %}
                 {# Display the list of posts #}
                 <h1 class="text-2xl pb-2">Forums</h1>
