@@ -8,6 +8,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use App\Repository\ForumRepository;
 use App\Repository\PostRepository;
 use App\Repository\CommentRepository;
+use App\Repository\UserLikeRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -18,6 +19,7 @@ class ForumController extends AbstractController
         ForumRepository $forumRepository, 
         PostRepository $postRepository, 
         CommentRepository $commentRepository, 
+        UserLikeRepository $userLikeRepository,
         Request $request, 
         ?int $postId = null
     ): Response
@@ -39,14 +41,20 @@ class ForumController extends AbstractController
         // If a postId is provided, fetch the post
         $selectedPost = null;
         $comments = null;
+        $likes = null;
         if ($postId) {
             $selectedPost = $postRepository->find($postId);
             $comments = $commentRepository->findByPost($postId);
+            $likes = [];
             if (!$selectedPost) {
                 throw $this->createNotFoundException('Post not found');
             }
 
-            // Handle form submission
+            foreach ($comments as $comment) {
+                array_push($likes, $userLikeRepository->countByCommentId($comment->getId()));
+            }
+
+            // 馬鹿みたい
             if ($request->isMethod('POST')) {
                 $commentBody = $request->request->get('comment');
                 if ($commentBody && $this->isGranted('IS_AUTHENTICATED_FULLY')) {
@@ -67,6 +75,7 @@ class ForumController extends AbstractController
             'posts' => $posts,
             'selectedPost' => $selectedPost,
             'comments' => $comments,
+            'likes' => $likes,
         ]);
     }
 }
