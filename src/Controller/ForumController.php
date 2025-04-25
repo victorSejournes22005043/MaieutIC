@@ -5,6 +5,8 @@ namespace App\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Entity\Comment;
+use App\Entity\UserLike;
 use App\Repository\ForumRepository;
 use App\Repository\PostRepository;
 use App\Repository\CommentRepository;
@@ -14,7 +16,40 @@ use Symfony\Component\HttpFoundation\Request;
 
 class ForumController extends AbstractController
 {
-    #[Route('/forums/{category}/{postId?}', name: 'app_forums')]
+    #[Route('/like/{id}', name: 'app_forums_like', methods: ['POST'])]
+    public function likeComment(
+        ?Comment $comment,
+        CommentRepository $commentRepository, 
+        UserLikeRepository $userLikeRepository, 
+        EntityManagerInterface $entityManager
+    ): Response {
+        if (!$comment) {
+            return $this->json(['error' => 'Comment not found'], 404);
+        }
+
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $existingLike = $userLikeRepository->findOneBy(['user' => $user, 'comment' => $comment]);
+        if ($existingLike) {
+            $entityManager->remove($existingLike);
+            $entityManager->flush();
+            return $this->json(['liked' => false]);
+        }
+
+        $like = new UserLike();
+        $like->setUser($user);
+        $like->setComment($comment);
+
+        $entityManager->persist($like);
+        $entityManager->flush();
+
+        return $this->json(['liked' => true]);
+    }
+
+    #[Route('forums/{category}/{postId?}', name: 'app_forums')]
     public function index(
         ForumRepository $forumRepository, 
         PostRepository $postRepository, 
@@ -22,11 +57,9 @@ class ForumController extends AbstractController
         UserLikeRepository $userLikeRepository,
         Request $request, 
         ?int $postId = null
-    ): Response
-    {
+    ): Response {
         $forums = $forumRepository->findAllOrderedByTitle();
         
-        // Decode the category from the URL
         $category = urldecode($request->attributes->get('category'));
         if (!$category) {
             $category = 'General';
@@ -38,29 +71,33 @@ class ForumController extends AbstractController
             $posts = $postRepository->findByForum($category);
         }
 
-        // If a postId is provided, fetch the post
         $selectedPost = null;
         $comments = null;
         $likes = null;
+        $userLikes = null;
+
         if ($postId) {
             $selectedPost = $postRepository->find($postId);
             $comments = $commentRepository->findByPost($postId);
             $likes = [];
+            $userLikes = [];
+
             if (!$selectedPost) {
                 throw $this->createNotFoundException('Post not found');
             }
 
             foreach ($comments as $comment) {
-                array_push($likes, $userLikeRepository->countByCommentId($comment->getId()));
+                $likes[] = $userLikeRepository->countByCommentId($comment->getId());
+                $userLikes[$comment->getId()] = $this->getUser() 
+                    ? $userLikeRepository->hasUserLikedComment($this->getUser()->getId(), $comment->getId()) 
+                    : false;
             }
 
-            // 馬鹿みたい
             if ($request->isMethod('POST')) {
                 $commentBody = $request->request->get('comment');
                 if ($commentBody && $this->isGranted('IS_AUTHENTICATED_FULLY')) {
                     $commentRepository->addComment($commentBody, $selectedPost, $this->getUser());
                     
-                    // Redirect to avoid form resubmission
                     return $this->redirectToRoute('app_forums', [
                         'category' => $category,
                         'postId' => $postId,
@@ -76,6 +113,7 @@ class ForumController extends AbstractController
             'selectedPost' => $selectedPost,
             'comments' => $comments,
             'likes' => $likes,
+            'userLikes' => $userLikes,
         ]);
     }
 }
