@@ -12,18 +12,22 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 final class LibraryController extends AbstractController{
     #[Route('/library', name: 'app_library')]
     public function index(AuthorRepository $authorRepository): Response
     {
         $authors = $authorRepository->findAllOrderedByName();
-        $form = $this->createForm(AuthorType::class);
+
+        $createForm = $this->createForm(AuthorType::class);
+        $editForm = $this->createForm(AuthorType::class, new Author());
 
         return $this->render('library/index.html.twig', [
             'controller_name' => 'LibraryController',
             'authors' => $authors,
-            'form' => $form,
+            'createForm' => $createForm,
+            'editForm' => $editForm,
         ]);
     }
 
@@ -53,6 +57,19 @@ final class LibraryController extends AbstractController{
         ]);
     }
 
+    #[Route('/library/author/data/{id}', name: 'app_author_data', methods: ['GET'])]
+    public function getAuthorData(Author $author): JsonResponse
+    {
+        return $this->json([
+            'name' => $author->getName(),
+            'birthYear' => $author->getBirthYear(),
+            'deathYear' => $author->getDeathYear(),
+            'nationality' => $author->getNationality(),
+            'link' => $author->getLink(),
+            'image' => $author->getImage(),
+        ]);
+    }
+
     #[Route('/library/author/edit/{id}', name: 'app_author_edit', methods:['POST'])]
     public function editAuthor(AuthorRepository $authorRepository, Request $request, Author $author): Response
     {
@@ -65,15 +82,14 @@ final class LibraryController extends AbstractController{
             throw $this->createNotFoundException('Auteur non trouvé');
         }
 
-        $author->setUser($user);
-        $author->setName($request->request->get('name'));
-        $author->setImage($request->request->get('image'));
-        $author->setBirthYear($request->request->get('birthYear'));
-        $author->setDeathYear($request->request->get('deathYear'));
-        $author->setNationality($request->request->get('nationality'));
-        $author->setLink($request->request->get('link'));
-        $authorRepository->editAuthor($author);
+        $form = $this->createForm(AuthorType::class, $author);
+        $form->handleRequest($request);
 
+        if ($form->isSubmitted() && $form->isValid()) {
+            $authorRepository->editAuthor($author);
+
+            return $this->redirectToRoute('app_library');
+        }
 
         return $this->redirectToRoute('app_library');
     }

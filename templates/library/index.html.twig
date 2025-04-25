@@ -41,15 +41,7 @@
 
                     {% if app.user and app.user.userType == 1 %}
                         <div class="absolute top-2 right-2 flex space-x-1">
-                            <button onclick="openAuthorEditModal(
-                                {{ author.id }},
-                                '{{ author.name|e('js') }}',
-                                '{{ author.birthYear|e('js') }}',
-                                '{{ author.deathYear|default('')|e('js') }}',
-                                '{{ author.nationality|e('js') }}',
-                                '{{ author.link|e('js') }}',
-                                '{{ author.image|e('js') }}'
-                            )"
+                            <button onclick="openAuthorEditModal({{ author.id }})"
                                     class="bg-yellow-400 hover:bg-yellow-500 text-white px-2 py-1 rounded text-xs font-semibold transition"
                                     title="Modifier">
                                 ✏️
@@ -71,6 +63,6 @@
 </div>
 
 <!-- Modals -->
-{% include 'components/_author_create_modal.html.twig' with {'form': form} %}
-{% include 'components/_author_edit_modal.html.twig' with {'form': form} %}
+{% include 'components/_author_create_modal.html.twig' with {'form': createForm} %}
+{% include 'components/_author_edit_modal.html.twig' with {'form': editForm} %}
 {% endblock %}
