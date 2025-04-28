@@ -17,6 +17,10 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Tag;
 use App\Entity\Taggable;
 use App\Repository\TaggableRepository;
+use App\Form\ArticleType;
+use App\Form\BookType;
+use App\Entity\Article;
+use App\Entity\Book;
 
 final class LibraryController extends AbstractController{
     #[Route('/library', name: 'app_library')]
@@ -179,19 +183,292 @@ final class LibraryController extends AbstractController{
     public function articles(ArticleRepository $articleRepository): Response
     {
         $articles = $articleRepository->findAllOrderedByTitle();
+        $createForm = $this->createForm(ArticleType::class);
+        $editForm = $this->createForm(ArticleType::class, new Article());
         return $this->render('library/articles.html.twig', [
             'controller_name' => 'LibraryController',
             'articles' => $articles,
+            'createForm' => $createForm,
+            'editForm' => $editForm,
         ]);
+    }
+
+    #[Route('/library/article/add', name: 'app_article_add')]
+    public function addArticle(Request $request, EntityManagerInterface $em): Response
+    {
+        $user = $this->getUser();
+        if (!$user || $user->getUserType() !== 1) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $article = new Article();
+        $form = $this->createForm(ArticleType::class, $article);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $article->setUser($user);
+            $em->persist($article);
+            $em->flush();
+
+            $tagIds = $request->request->all('article')['tags'] ?? [];
+            foreach ($tagIds as $tagId) {
+                $tag = $em->getRepository(Tag::class)->find($tagId);
+                if ($tag) {
+                    $taggable = new Taggable();
+                    $taggable->setTag($tag);
+                    $taggable->setEntityId($article->getId());
+                    $taggable->setEntityType('article');
+                    $em->persist($taggable);
+                }
+            }
+            $em->flush();
+
+            return $this->redirectToRoute('app_library_articles');
+        }
+
+        return $this->render('library/articles.html.twig', [
+            'controller_name' => 'LibraryController',
+            'articles' => [],
+            'createForm' => $form,
+            'editForm' => $this->createForm(ArticleType::class, new Article()),
+        ]);
+    }
+
+    #[Route('/library/article/data/{id}', name: 'app_article_data', methods: ['GET'])]
+    public function getArticleData(Article $article, TaggableRepository $taggableRepository): JsonResponse
+    {
+        $articleTags = $taggableRepository->findByTypeAndId('article', $article->getId());
+        $tags = [];
+        foreach ($articleTags as $taggable) {
+            $tag = $taggable->getTag();
+            if ($tag) {
+                $tags[] = [
+                    'id' => $tag->getId(),
+                    'name' => $tag->getName(),
+                ];
+            }
+        }
+
+        return $this->json([
+            'title' => $article->getTitle(),
+            'author' => $article->getAuthor(),
+            'link' => $article->getLink(),
+            'tags' => $tags,
+        ]);
+    }
+
+    #[Route('/library/article/edit/{id}', name: 'app_article_edit', methods:['POST'])]
+    public function editArticle(
+        Request $request,
+        Article $article,
+        EntityManagerInterface $em,
+        TaggableRepository $taggableRepository
+    ): Response
+    {
+        $user = $this->getUser();
+        if (!$user || $user->getUserType() !== 1) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        if (!$article) {
+            throw $this->createNotFoundException('Article non trouvé');
+        }
+
+        $form = $this->createForm(ArticleType::class, $article);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->persist($article);
+
+            $oldTaggables = $taggableRepository->findByTypeAndId('article', $article->getId());
+            foreach ($oldTaggables as $taggable) {
+                $em->remove($taggable);
+            }
+
+            $tagIds = $request->request->all('article')['tags'] ?? [];
+            foreach ($tagIds as $tagId) {
+                $tag = $em->getRepository(Tag::class)->find($tagId);
+                if ($tag) {
+                    $taggable = new Taggable();
+                    $taggable->setTag($tag);
+                    $taggable->setEntityId($article->getId());
+                    $taggable->setEntityType('article');
+                    $em->persist($taggable);
+                }
+            }
+
+            $em->flush();
+
+            return $this->redirectToRoute('app_library_articles');
+        }
+
+        return $this->redirectToRoute('app_library_articles');
+    }
+
+    #[Route('/library/article/delete/{id}', name: 'app_article_delete')]
+    public function deleteArticle(Request $request, Article $article, EntityManagerInterface $em): RedirectResponse
+    {
+        $user = $this->getUser();
+        if (!$user || $user->getUserType() !== 1) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        if (!$article) {
+            throw $this->createNotFoundException('Article non trouvé');
+        }
+
+        if ($this->isCsrfTokenValid('delete_article_' . $article->getId(), $request->request->get('_token'))) {
+            $em->remove($article);
+            $em->flush();
+        }
+
+        return $this->redirectToRoute('app_library_articles');
     }
 
     #[Route('/library/books', name: 'app_library_books')]
     public function books(BookRepository $bookRepository): Response
     {
         $books = $bookRepository->findAllOrderedByTitle();
+        $createForm = $this->createForm(BookType::class);
+        $editForm = $this->createForm(BookType::class, new Book());
         return $this->render('library/books.html.twig', [
             'controller_name' => 'LibraryController',
             'books' => $books,
+            'createForm' => $createForm,
+            'editForm' => $editForm,
         ]);
+    }
+
+    #[Route('/library/book/add', name: 'app_book_add')]
+    public function addBook(Request $request, EntityManagerInterface $em): Response
+    {
+        $user = $this->getUser();
+        if (!$user || $user->getUserType() !== 1) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $book = new Book();
+        $form = $this->createForm(BookType::class, $book);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $book->setUser($user);
+            $em->persist($book);
+            $em->flush();
+
+            $tagIds = $request->request->all('book')['tags'] ?? [];
+            foreach ($tagIds as $tagId) {
+                $tag = $em->getRepository(Tag::class)->find($tagId);
+                if ($tag) {
+                    $taggable = new Taggable();
+                    $taggable->setTag($tag);
+                    $taggable->setEntityId($book->getId());
+                    $taggable->setEntityType('book');
+                    $em->persist($taggable);
+                }
+            }
+            $em->flush();
+
+            return $this->redirectToRoute('app_library_books');
+        }
+
+        return $this->render('library/books.html.twig', [
+            'controller_name' => 'LibraryController',
+            'books' => [],
+            'createForm' => $form,
+            'editForm' => $this->createForm(BookType::class, new Book()),
+        ]);
+    }
+
+    #[Route('/library/book/data/{id}', name: 'app_book_data', methods: ['GET'])]
+    public function getBookData(Book $book, TaggableRepository $taggableRepository): JsonResponse
+    {
+        $bookTags = $taggableRepository->findByTypeAndId('book', $book->getId());
+        $tags = [];
+        foreach ($bookTags as $taggable) {
+            $tag = $taggable->getTag();
+            if ($tag) {
+                $tags[] = [
+                    'id' => $tag->getId(),
+                    'name' => $tag->getName(),
+                ];
+            }
+        }
+
+        return $this->json([
+            'title' => $book->getTitle(),
+            'author' => $book->getAuthor(),
+            'link' => $book->getLink(),
+            'image' => $book->getImage(),
+            'tags' => $tags,
+        ]);
+    }
+
+    #[Route('/library/book/edit/{id}', name: 'app_book_edit', methods:['POST'])]
+    public function editBook(
+        Request $request,
+        Book $book,
+        EntityManagerInterface $em,
+        TaggableRepository $taggableRepository
+    ): Response
+    {
+        $user = $this->getUser();
+        if (!$user || $user->getUserType() !== 1) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        if (!$book) {
+            throw $this->createNotFoundException('Livre non trouvé');
+        }
+
+        $form = $this->createForm(BookType::class, $book);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->persist($book);
+
+            $oldTaggables = $taggableRepository->findByTypeAndId('book', $book->getId());
+            foreach ($oldTaggables as $taggable) {
+                $em->remove($taggable);
+            }
+
+            $tagIds = $request->request->all('book')['tags'] ?? [];
+            foreach ($tagIds as $tagId) {
+                $tag = $em->getRepository(Tag::class)->find($tagId);
+                if ($tag) {
+                    $taggable = new Taggable();
+                    $taggable->setTag($tag);
+                    $taggable->setEntityId($book->getId());
+                    $taggable->setEntityType('book');
+                    $em->persist($taggable);
+                }
+            }
+
+            $em->flush();
+
+            return $this->redirectToRoute('app_library_books');
+        }
+
+        return $this->redirectToRoute('app_library_books');
+    }
+
+    #[Route('/library/book/delete/{id}', name: 'app_book_delete')]
+    public function deleteBook(Request $request, Book $book, EntityManagerInterface $em): RedirectResponse
+    {
+        $user = $this->getUser();
+        if (!$user || $user->getUserType() !== 1) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        if (!$book) {
+            throw $this->createNotFoundException('Livre non trouvé');
+        }
+
+        if ($this->isCsrfTokenValid('delete_book_' . $book->getId(), $request->request->get('_token'))) {
+            $em->remove($book);
+            $em->flush();
+        }
+
+        return $this->redirectToRoute('app_library_books');
     }
 }
