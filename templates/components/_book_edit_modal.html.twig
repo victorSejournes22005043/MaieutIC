@@ -1,0 +1,128 @@
+{% if app.user and app.user.userType == 1 %}
+<div id="book-edit-modal" class="fixed inset-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-[1000] hidden">
+    <div class="bg-white p-5 rounded-lg w-[90%] max-w-[500px] shadow-lg relative">
+        <span class="absolute top-2 right-2 text-2xl cursor-pointer" onclick="closeBookEditModal()">&times;</span>
+        <h2 class="text-xl font-bold mb-4">Modifier un livre</h2>
+        {{ form_start(form, {'attr': {'id': 'book-edit-form', 'class': 'space-y-4'}, 'action': path('app_book_edit', {'id': 1})}) }}
+            {{ form_row(form.title) }}
+            {{ form_row(form.author) }}
+            {{ form_row(form.link) }}
+            {{ form_row(form.image) }}
+
+            <div class="mb-4">
+                {{ form_label(form.tags) }}
+                {{ form_widget(form.tags, {'attr': {'class': 'w-full p-2 border border-gray-300 rounded', 'multiple': false}}) }}
+                <div id="selected-book-tags-edit" class="mt-2 flex flex-wrap gap-2"></div>
+                {{ form_errors(form.tags) }}
+            </div>
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Enregistrer</button>
+        {{ form_end(form) }}
+    </div>
+</div>
+<script>
+    function setupTagSelectBookEdit() {
+        const form = document.getElementById('book-edit-form');
+        if (!form) return;
+        const select = form.querySelector('select');
+        const tagDisplay = document.getElementById('selected-book-tags-edit');
+        if (!select || !tagDisplay) return;
+        const newSelect = select.cloneNode(true);
+        select.parentNode.replaceChild(newSelect, select);
+        newSelect.removeAttribute('multiple');
+        if (!newSelect.querySelector('option[disabled][value=""]')) {
+            const placeholder = document.createElement('option');
+            placeholder.value = '';
+            placeholder.disabled = true;
+            placeholder.selected = true;
+            placeholder.hidden = true;
+            placeholder.textContent = '-- Choisir des mots-clés --';
+            newSelect.insertBefore(placeholder, newSelect.firstChild);
+        }
+        const inputName = newSelect.name.replace(/\[\]$/, '');
+        Array.from(newSelect.options).forEach(opt => {
+            if (opt.disabled && opt.value === '') {
+                opt.selected = true;
+            } else {
+                opt.selected = false;
+            }
+        });
+        newSelect.addEventListener('change', (e) => {
+            const selectedOption = newSelect.selectedOptions[0];
+            const tagName = selectedOption.textContent.trim();
+            const tagId = selectedOption.value;
+            if (!tagId || tagDisplay.querySelector(`input[value="${tagId}"]`)) return;
+            const hidden = document.createElement('input');
+            hidden.type = 'hidden';
+            hidden.name = `${inputName}[]`;
+            hidden.value = tagId;
+            const tag = document.createElement('span');
+            tag.className = 'bg-indigo-100 text-indigo-800 text-sm font-medium px-3 py-1 rounded-full flex items-center gap-1';
+            tag.innerHTML = `
+                ${tagName}
+                <button type="button" class="remove-tag text-indigo-600 font-bold hover:text-red-500" data-tag-id="${tagId}">&times;</button>
+            `;
+            tag.appendChild(hidden);
+            tagDisplay.appendChild(tag);
+            tag.querySelector('.remove-tag').addEventListener('click', () => {
+                tag.remove();
+            });
+            Array.from(newSelect.options).forEach(opt => {
+                if (opt.disabled && opt.value === '') {
+                    opt.selected = true;
+                } else {
+                    opt.selected = false;
+                }
+            });
+        });
+        form.addEventListener('submit', function() {
+            Array.from(newSelect.options).forEach(opt => {
+                if (!opt.disabled) opt.selected = false;
+            });
+        });
+        form._tagSelect = newSelect;
+    }
+    function openBookEditModal(id) {
+        const form = document.getElementById('book-edit-form');
+        const tagDisplay = document.getElementById('selected-book-tags-edit');
+        const editUrl = `{{ path('app_book_edit', {'id': 'PLACEHOLDER'}) }}`.replace('PLACEHOLDER', id);
+        form.action = editUrl;
+        fetch(`/library/book/data/${id}`)
+            .then(response => response.json())
+            .then(data => {
+                form.querySelector('[name$="[title]"]').value = data.title;
+                form.querySelector('[name$="[author]"]').value = data.author;
+                form.querySelector('[name$="[link]"]').value = data.link;
+                form.querySelector('[name$="[image]"]').value = data.image;
+                tagDisplay.innerHTML = '';
+                Array.from(form.querySelectorAll('input[type="hidden"][name^="book[tags]"]')).forEach(e => e.remove());
+                setupTagSelectBookEdit();
+                if (data.tags) {
+                    data.tags.forEach(tag => {
+                        const hidden = document.createElement('input');
+                        hidden.type = 'hidden';
+                        hidden.name = 'book[tags][]';
+                        hidden.value = tag.id;
+                        const tagSpan = document.createElement('span');
+                        tagSpan.className = 'bg-indigo-100 text-indigo-800 text-sm font-medium px-3 py-1 rounded-full flex items-center gap-1';
+                        tagSpan.innerHTML = `
+                            ${tag.name}
+                            <button type="button" class="remove-tag text-indigo-600 font-bold hover:text-red-500" data-tag-id="${tag.id}">&times;</button>
+                        `;
+                        tagSpan.appendChild(hidden);
+                        tagDisplay.appendChild(tagSpan);
+                        tagSpan.querySelector('.remove-tag').addEventListener('click', () => {
+                            tagSpan.remove();
+                        });
+                    });
+                }
+                document.getElementById('book-edit-modal').classList.remove('hidden');
+            });
+    }
+    function closeBookEditModal() {
+        document.getElementById('book-edit-modal').classList.add('hidden');
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        setupTagSelectBookEdit();
+    });
+</script>
+{% endif %}
