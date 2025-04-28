@@ -8,6 +8,8 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use App\Entity\Tag;
 
 class AuthorType extends AbstractType
 {
@@ -37,6 +39,18 @@ class AuthorType extends AbstractType
             ->add('image', TextType::class, [
                 'label' => "Lien d'une image de l'auteur",
                 'required' => false,
+            ])
+            ->add('tags', EntityType::class, [
+                'class' => Tag::class,
+                'choice_label' => 'name',
+                'multiple' => true,
+                'expanded' => false,
+                'required' => false,
+                'mapped' => false,
+                'label' => 'Mots-clés (tags)',
+                'attr' => [
+                    'class' => 'w-full p-2 border border-gray-300 rounded'
+                ]
             ]);
     }
 

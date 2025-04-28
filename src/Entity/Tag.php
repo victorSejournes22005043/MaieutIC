@@ -5,6 +5,7 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use App\Entity\Author;
 
 #[ORM\Entity]
 class Tag
@@ -16,19 +17,6 @@ class Tag
 
     #[ORM\Column(length: 255)]
     private ?string $name = null;
-
-    #[ORM\OneToMany(targetEntity: Taggable::class, mappedBy: "tag", cascade: ["remove"])]
-    private Collection $taggables;
-
-    public function __construct()
-    {
-        $this->taggables = new ArrayCollection();
-    }
-
-    public function getTaggables(): Collection
-    {
-        return $this->taggables;
-    }
 
     public function getId(): ?int
     {

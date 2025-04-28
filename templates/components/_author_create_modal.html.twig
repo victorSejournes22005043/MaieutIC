@@ -4,7 +4,21 @@
         <span class="absolute top-2 right-2 text-2xl cursor-pointer" onclick="closeAuthorCreateModal()">&times;</span>
         <h2 class="text-xl font-bold mb-4">Ajouter un auteur</h2>
         {{ form_start(form, {'attr': {'id': 'author-create-form', 'class': 'space-y-4'}, 'action': path('app_author_add')}) }}
-            {{ form_widget(form, {'attr': {'class': 'w-full p-2 border border-gray-300 rounded'}}) }}
+            {{ form_row(form.name) }}
+            {{ form_row(form.birthYear) }}
+            {{ form_row(form.deathYear) }}
+            {{ form_row(form.nationality) }}
+            {{ form_row(form.link) }}
+            {{ form_row(form.image) }}
+
+            <div class="mb-4">
+                {{ form_label(form.tags) }}
+                {# On force le select à être simple (non multiple) #}
+                {{ form_widget(form.tags, {'attr': {'class': 'w-full p-2 border border-gray-300 rounded', 'multiple': false}}) }}
+                <div id="selected-tags" class="mt-2 flex flex-wrap gap-2"></div>
+                {{ form_errors(form.tags) }}
+            </div>
+
             <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Ajouter</button>
         {{ form_end(form) }}
     </div>
@@ -12,9 +26,77 @@
 <script>
     function openAuthorCreateModal() {
         document.getElementById('author-create-modal').classList.remove('hidden');
+        setupTagSelectCreate(); // <-- Ajouté : réapplique la personnalisation à chaque ouverture
     }
     function closeAuthorCreateModal() {
         document.getElementById('author-create-modal').classList.add('hidden');
     }
+
+    function setupTagSelectCreate() {
+        const select = document.querySelector('#author-create-form select');
+        const tagDisplay = document.getElementById('selected-tags');
+        if (!select || !tagDisplay) return;
+
+        // Nettoyage : retire les anciens eventListeners en remplaçant le select par un clone
+        const newSelect = select.cloneNode(true);
+        select.parentNode.replaceChild(newSelect, select);
+
+        // On retire l'attribut multiple pour forcer le menu déroulant classique
+        newSelect.removeAttribute('multiple');
+
+        // Ajout d'un placeholder si non déjà présent
+        if (!newSelect.querySelector('option[disabled][value=""]')) {
+            const placeholder = document.createElement('option');
+            placeholder.value = '';
+            placeholder.disabled = true;
+            placeholder.selected = true;
+            placeholder.hidden = true;
+            placeholder.textContent = '-- Choisir des mots-clés --';
+            newSelect.insertBefore(placeholder, newSelect.firstChild);
+        }
+
+        const inputName = newSelect.name.replace(/\[\]$/, '');
+
+        newSelect.addEventListener('change', (e) => {
+            const selectedOption = newSelect.selectedOptions[0];
+            const tagName = selectedOption.textContent.trim();
+            const tagId = selectedOption.value;
+
+            if (!tagId || tagDisplay.querySelector(`input[value="${tagId}"]`)) return;
+
+            const hidden = document.createElement('input');
+            hidden.type = 'hidden';
+            hidden.name = `${inputName}[]`;
+            hidden.value = tagId;
+
+            const tag = document.createElement('span');
+            tag.className = 'bg-indigo-100 text-indigo-800 text-sm font-medium px-3 py-1 rounded-full flex items-center gap-1';
+            tag.innerHTML = `
+                ${tagName}
+                <button type="button" class="remove-tag text-indigo-600 font-bold hover:text-red-500" data-tag-id="${tagId}">&times;</button>
+            `;
+
+            tag.appendChild(hidden);
+            tagDisplay.appendChild(tag);
+
+            tag.querySelector('.remove-tag').addEventListener('click', () => {
+                tag.remove();
+            });
+
+            // Réaffiche le placeholder après ajout
+            newSelect.selectedIndex = 0;
+        });
+
+        // Nettoyer les tags cachés avant soumission pour éviter les doublons
+        document.getElementById('author-create-form').addEventListener('submit', function() {
+            Array.from(newSelect.options).forEach(opt => {
+                if (!opt.disabled) opt.selected = false;
+            });
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        setupTagSelectCreate();
+    });
 </script>
 {% endif %}

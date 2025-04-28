@@ -13,6 +13,10 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Doctrine\ORM\EntityManagerInterface;
+use App\Entity\Tag;
+use App\Entity\Taggable;
+use App\Repository\TaggableRepository;
 
 final class LibraryController extends AbstractController{
     #[Route('/library', name: 'app_library')]
@@ -32,7 +36,7 @@ final class LibraryController extends AbstractController{
     }
 
     #[Route('/library/author/add', name: 'app_author_add')]
-    public function addAuthor(AuthorRepository $authorRepository, Request $request): Response
+    public function addAuthor(AuthorRepository $authorRepository, Request $request, EntityManagerInterface $em): Response
     {
         $user = $this->getUser();
         if (!$user || $user->getUserType() !== 1) {
@@ -45,7 +49,22 @@ final class LibraryController extends AbstractController{
 
         if ($form->isSubmitted() && $form->isValid()) {
             $author->setUser($user);
+
             $authorRepository->addAuthor($author);
+            // Les tags sont automatiquement gérés par le formulaire
+
+            $tagIds = $request->request->all('author')['tags'] ?? [];
+            foreach ($tagIds as $tagId) {
+                $tag = $em->getRepository(Tag::class)->find($tagId);
+                if ($tag) {
+                    $taggable = new Taggable();
+                    $taggable->setTag($tag);
+                    $taggable->setEntityId($author->getId());
+                    $taggable->setEntityType('author');
+                    $em->persist($taggable);
+                }
+            }
+            $em->flush();
 
             return $this->redirectToRoute('app_library');
         }
@@ -58,8 +77,21 @@ final class LibraryController extends AbstractController{
     }
 
     #[Route('/library/author/data/{id}', name: 'app_author_data', methods: ['GET'])]
-    public function getAuthorData(Author $author): JsonResponse
+    public function getAuthorData(Author $author, TaggableRepository $taggableRepository): JsonResponse
     {
+
+        $authorTags = $taggableRepository->findByTypeAndId('author', $author->getId());
+        $tags = [];
+        foreach ($authorTags as $taggable) {
+            $tag = $taggable->getTag();
+            if ($tag) {
+                $tags[] = [
+                    'id' => $tag->getId(),
+                    'name' => $tag->getName(),
+                ];
+            }
+        }
+
         return $this->json([
             'name' => $author->getName(),
             'birthYear' => $author->getBirthYear(),
@@ -67,15 +99,22 @@ final class LibraryController extends AbstractController{
             'nationality' => $author->getNationality(),
             'link' => $author->getLink(),
             'image' => $author->getImage(),
+            'tags' => $tags,
         ]);
     }
 
     #[Route('/library/author/edit/{id}', name: 'app_author_edit', methods:['POST'])]
-    public function editAuthor(AuthorRepository $authorRepository, Request $request, Author $author): Response
+    public function editAuthor(
+        AuthorRepository $authorRepository,
+        Request $request,
+        Author $author,
+        EntityManagerInterface $em,
+        TaggableRepository $taggableRepository
+    ): Response
     {
         $user = $this->getUser();
         if (!$user || $user->getUserType() !== 1) {
-            return $this->redirectToRoute('app_login'); // Ou utilisez throw $this->createAccessDeniedException();
+            return $this->redirectToRoute('app_login');
         }
 
         if (!$author) {
@@ -87,6 +126,29 @@ final class LibraryController extends AbstractController{
 
         if ($form->isSubmitted() && $form->isValid()) {
             $authorRepository->editAuthor($author);
+
+            // --- Gestion des tags ---
+            // 1. Supprimer les anciens liens Taggable pour cet auteur
+            $oldTaggables = $taggableRepository->findByTypeAndId('author', $author->getId());
+            foreach ($oldTaggables as $taggable) {
+                $em->remove($taggable);
+            }
+
+            // 2. Ajouter les nouveaux liens Taggable
+            $tagIds = $request->request->all('author')['tags'] ?? [];
+            foreach ($tagIds as $tagId) {
+                $tag = $em->getRepository(\App\Entity\Tag::class)->find($tagId);
+                if ($tag) {
+                    $taggable = new \App\Entity\Taggable();
+                    $taggable->setTag($tag);
+                    $taggable->setEntityId($author->getId());
+                    $taggable->setEntityType('author');
+                    $em->persist($taggable);
+                }
+            }
+
+            $em->flush();
+            // --- Fin gestion tags ---
 
             return $this->redirectToRoute('app_library');
         }
