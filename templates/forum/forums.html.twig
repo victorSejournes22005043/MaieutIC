@@ -59,12 +59,17 @@
                     {% for i, comment in comments %}
                         <div class="flex flex-row items-center w-full my-2">
                             <a class="flex flex-col items-center text-gray-500 w-8 mx-2">
-                                <p>♥</p>
+                                {% if userLikes[comment.id] %}
+                                    <button class="text-red-500 text-lg" onclick="likeComment({{ comment.id }})">♥</button>
+                                {% else %}
+                                    <button class="text-gray-500 text-lg" onclick="likeComment({{ comment.id }})">♡</button>
+                                {% endif %}
                                 <p>{{ likes[i] }}</p>
                             </a>
                             <div class="bg-white p-3 rounded-lg w-full">
                                 <p><strong>{{ comment.user.firstName }} {{ comment.user.lastName }}</strong></p>
                                 <p>{{ comment.body }}</p>
+                                <p>{{ comment.id }}</p>
                             </div>
                         </div>
                     {% endfor %}
@@ -105,4 +110,19 @@
         </ul>
     </div>
 </body>
+<script>
+    function likeComment(id, like) {
+        fetch(`/like/${id}`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            location.reload();
+        })
+        .catch(error => console.error('Error:', error));
+        }
+</script>
 </html>

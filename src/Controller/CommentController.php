@@ -40,7 +40,7 @@ class CommentController extends AbstractController
         $post = $entityManager->getRepository(Post::class)->find($post_id);
 
         if (!$post) {
-            throw $this->createNotFoundException('Post not found');
+            throw $this->createNotFoundException('Post not found gros con');
         }
 
         $comment = new Comment();
