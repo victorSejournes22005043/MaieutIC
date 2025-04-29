@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 use App\Entity\Resource;
 use App\Form\ResourceType;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 final class ResourcePageController extends AbstractController
 {
@@ -24,12 +25,14 @@ final class ResourcePageController extends AbstractController
         }
         
         $resources = $resourceRepository->findByPage($page);
-        $form = $this->createForm(ResourceType::class);
+        $createForm = $this->createForm(ResourceType::class);
+        $editForm = $this->createForm(ResourceType::class);
 
         return $this->render("$page/index.html.twig", [
             'controller_name' => ucfirst($page) . 'Controller',
             'resources' => $resources,
-            'form' => $form,
+            'createForm' => $createForm,
+            'editForm' => $editForm,
             'page' => $page,
         ]);
     }
@@ -52,10 +55,11 @@ final class ResourcePageController extends AbstractController
         }
 
         $resource = new Resource();
-        $form = $this->createForm(ResourceType::class, $resource);
-        $form->handleRequest($request);
+        $createForm = $this->createForm(ResourceType::class, $resource);
+        $editForm = $this->createForm(ResourceType::class);
+        $createForm->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
+        if ($createForm->isSubmitted() && $createForm->isValid()) {
             $resource->setPage($page);
             $resource->setUser($user);
             $em->persist($resource);
@@ -69,8 +73,88 @@ final class ResourcePageController extends AbstractController
         return $this->render("$page/index.html.twig", [
             'controller_name' => ucfirst($page) . 'Controller',
             'resources' => $resources,
-            'form' => $form,
+            'createForm' => $createForm,
+            'editForm' => $editForm,
             'page' => $page,
         ]);
+    }
+
+    #[Route(
+        '/{page}/resource/data/{id}',
+        name: 'app_resource_data',
+        methods: ['GET'],
+        requirements: ['page' => 'chill|methodology|administrative']
+    )]
+    public function getResourceData(string $page, Resource $resource): JsonResponse
+    {
+        return $this->json([
+            'title' => $resource->getTitle(),
+            'description' => $resource->getDescription(),
+            'link' => $resource->getLink(),
+        ]);
+    }
+
+    #[Route(
+        '/{page}/resource/edit/{id}',
+        name: 'app_resource_edit',
+        methods: ['POST'],
+        requirements: ['page' => 'chill|methodology|administrative']
+    )]
+    public function edit(string $page, Resource $resource, Request $request, ResourceRepository $resourceRepository, EntityManagerInterface $em): Response
+    {
+        $allowedPages = ['chill', 'methodology', 'administrative'];
+        if (!in_array($page, $allowedPages)) {
+            throw $this->createNotFoundException();
+        }
+
+        $user = $this->getUser();
+        if (!$user || $user->getUserType() !== 1) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        $editForm = $this->createForm(ResourceType::class, $resource);
+        $createForm = $this->createForm(ResourceType::class);
+        $editForm->handleRequest($request);
+
+        if ($editForm->isSubmitted() && $editForm->isValid()) {
+            $em->persist($resource);
+            $em->flush();
+            return $this->redirectToRoute('app_resource_page', ['page' => $page]);
+        }
+
+        $resources = $resourceRepository->findByPage($page);
+        return $this->render("$page/index.html.twig", [
+            'controller_name' => ucfirst($page) . 'Controller',
+            'resources' => $resources,
+            'createForm' => $createForm,
+            'editForm' => $editForm,
+            'page' => $page,
+        ]);
+    }
+
+    #[Route(
+        '/{page}/resource/delete/{id}',
+        name: 'app_resource_delete',
+        methods: ['POST'],
+        requirements: ['page' => 'chill|methodology|administrative']
+    )]
+    public function delete(string $page, Resource $resource, Request $request, EntityManagerInterface $em): Response
+    {
+        $allowedPages = ['chill', 'methodology', 'administrative'];
+        if (!in_array($page, $allowedPages)) {
+            throw $this->createNotFoundException();
+        }
+
+        $user = $this->getUser();
+        if (!$user || $user->getUserType() !== 1) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        if ($this->isCsrfTokenValid('delete_resource_' . $resource->getId(), $request->request->get('_token'))) {
+            $em->remove($resource);
+            $em->flush();
+        }
+
+        return $this->redirectToRoute('app_resource_page', ['page' => $page]);
     }
 }

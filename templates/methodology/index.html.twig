@@ -28,7 +28,7 @@
     {% endif %}
     <ul class="space-y-5">
         {% for resource in resources %}
-            <li class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
+            <li class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow relative">
                 <div class="text-xl font-semibold text-blue-800 mb-1">{{ resource.title }}</div>
                 <div class="text-gray-700 mb-3">{{ resource.description }}</div>
                 {% if resource.link %}
@@ -45,12 +45,29 @@
                     {% endif %}
                     <a href="{{ resource.link }}" target="_blank" class="text-blue-600 hover:underline">Voir la resource</a>
                 {% endif %}
+                {% if app.user and app.user.userType == 1 %}
+                    <div class="absolute top-2 right-2 flex space-x-1">
+                        <button onclick="openResourceEditModal({{ resource.id }})"
+                                class="bg-yellow-400 hover:bg-yellow-500 text-white px-2 py-1 rounded text-xs font-semibold transition"
+                                title="Modifier">
+                            ✏️
+                        </button>
+                        <form method="post" action="{{ path('app_resource_delete', {'page': page, 'id': resource.id}) }}" onsubmit="return confirm('Voulez-vous vraiment supprimer cette ressource ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_resource_' ~ resource.id) }}">
+                            <button type="submit"
+                                    class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs font-semibold transition"
+                                    title="Supprimer">
+                                🗑️
+                            </button>
+                        </form>
+                    </div>
+                {% endif %}
             </li>
         {% else %}
             <li>Aucune resource disponible pour le moment.</li>
         {% endfor %}
     </ul>
 </div>
-{# Modal pour la création de resource #}
-{% include 'components/_resource_create_modal.html.twig' with {'form': form, 'page': page} %}
+{% include 'components/_resource_create_modal.html.twig' with {'form': createForm, 'page': page} %}
+{% include 'components/_resource_edit_modal.html.twig' with {'form': editForm, 'page': page} %}
 {% endblock %}
