@@ -21,6 +21,7 @@ use App\Form\ArticleType;
 use App\Form\BookType;
 use App\Entity\Article;
 use App\Entity\Book;
+use App\Repository\TagRepository;
 
 final class LibraryController extends AbstractController{
     #[Route('/library', name: 'app_library')]
@@ -470,5 +471,32 @@ final class LibraryController extends AbstractController{
         }
 
         return $this->redirectToRoute('app_library_books');
+    }
+
+    #[Route('/library/tag/search', name: 'app_tag_search', methods: ['GET'])]
+    public function tagSearch(Request $request, TagRepository $tagRepository): JsonResponse
+    {
+        $q = $request->query->get('q', '');
+        $tags = $tagRepository->searchByName($q);
+        $result = [];
+        foreach ($tags as $tag) {
+            $result[] = ['id' => $tag->getId(), 'name' => $tag->getName()];
+        }
+        return $this->json($result);
+    }
+
+    #[Route('/library/author/filter', name: 'app_author_filter', methods: ['GET'])]
+    public function filterAuthors(Request $request, AuthorRepository $authorRepository, TaggableRepository $taggableRepository): Response
+    {
+        $tagIds = $request->query->all('tags');
+        if (empty($tagIds)) {
+            $authors = $authorRepository->findAllOrderedByName();
+        } else {
+            $authors = $authorRepository->findByTags($tagIds, $taggableRepository);
+        }
+        return $this->render('library/_authors_grid.html.twig', [
+            'authors' => $authors,
+            'app' => ['user' => $this->getUser()],
+        ]);
     }
 }

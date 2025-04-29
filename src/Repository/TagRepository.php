@@ -34,4 +34,18 @@ class TagRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Recherche les tags par nom (LIKE)
+     */
+    public function searchByName(string $q): array
+    {
+        return $this->createQueryBuilder('t')
+            ->where('LOWER(t.name) LIKE :q')
+            ->setParameter('q', '%' . strtolower($q) . '%')
+            ->orderBy('t.name', 'ASC')
+            ->setMaxResults(10)
+            ->getQuery()
+            ->getResult();
+    }
 }

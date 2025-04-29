@@ -53,4 +53,22 @@ class AuthorRepository extends ServiceEntityRepository
         $this->getEntityManager()->persist($author);
         $this->getEntityManager()->flush();
     }
+
+    public function findByTags(array $tagIds, $taggableRepository): array
+    {
+        if (empty($tagIds)) {
+            return $this->findAllOrderedByName();
+        }
+        // On récupère les entityId (author.id) ayant tous les tags demandés
+        $qb = $this->createQueryBuilder('a')
+            ->innerJoin('App\Entity\Taggable', 't', 'WITH', 't.entityId = a.id AND t.entityType = :type')
+            ->where('t.tag IN (:tagIds)')
+            ->setParameter('type', 'author')
+            ->setParameter('tagIds', $tagIds)
+            ->groupBy('a.id')
+            ->having('COUNT(DISTINCT t.tag) = :count')
+            ->setParameter('count', count($tagIds))
+            ->orderBy('a.name', 'ASC');
+        return $qb->getQuery()->getResult();
+    }
 }
