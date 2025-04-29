@@ -80,7 +80,7 @@
                     <h1 class="text-2xl pb-2">Forums</h1>
 
                     {% if is_granted('IS_AUTHENTICATED_FULLY') %}
-                        <button onclick="document.getElementById('post_create_modal').classList.remove('hidden')" class="mt-2 bg-blue-500 text-white px-4 py-2 rounded-lg">+ Créer une publication</button>
+                        <button onclick="openPostCreateModal()" class="mt-2 bg-blue-500 text-white px-4 py-2 rounded-lg">+ Créer une publication</button>
                     {% else %}
                         <button onclick="window.location.href='{{ path('app_login') }}'" class="mt-2 bg-blue-500 text-white px-4 py-2 rounded-lg">+ Créer une publication</button>
                     {% endif %}
@@ -131,6 +131,50 @@
             location.reload();
         })
         .catch(error => console.error('Error:', error));
+    }
+
+    function openPostCreateModal() {
+        document.getElementById('post-create-modal').classList.remove('hidden');
+        setupForumSelect();
+    }
+    function closePostCreateModal() {
+        document.getElementById('post-create-modal').classList.add('hidden');
+    }
+    function setupForumSelect() {
+        const select = document.querySelector('#post-create-form select[name$="[forum]"]');
+        if (!select) return;
+        // Préselectionne le forum selon la catégorie courante
+        const currentCategory = "{{ category|e('js') }}";
+        if (currentCategory && currentCategory !== 'General') {
+            for (let opt of select.options) {
+                if (opt.textContent.trim() === currentCategory) {
+                    select.value = opt.value;
+                    break;
+                }
+            }
         }
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        setupForumSelect();
+    });
 </script>
+
+{# Modal de création de post #}
+{% if is_granted('IS_AUTHENTICATED_FULLY') %}
+<div id="post-create-modal" class="fixed inset-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-[1000] hidden">
+    <div class="bg-white p-5 rounded-lg w-[90%] max-w-[500px] shadow-lg relative">
+        <span class="absolute top-2 right-2 text-2xl cursor-pointer" onclick="closePostCreateModal()">&times;</span>
+        <h2 class="text-xl font-bold mb-4">Créer une publication</h2>
+        {{ form_start(form, {
+            'attr': {'id': 'post-create-form'},
+            'action': path('app_post_add', { category: category })
+        }) }}
+            {{ form_row(form.name) }}
+            {{ form_row(form.description) }}
+            {{ form_row(form.forum) }}
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Publier</button>
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endif %}
 </html>

@@ -13,43 +13,58 @@ use App\Repository\CommentRepository;
 use App\Repository\UserLikeRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
+use App\Form\formType;
+use App\Entity\Post;
+use App\Form\PostFormType;
 
 class ForumController extends AbstractController
 {
-    #[Route('/like/{id}', name: 'app_forums_like', methods: ['POST'])]
-    public function likeComment(
-        ?Comment $comment,
-        CommentRepository $commentRepository, 
-        UserLikeRepository $userLikeRepository, 
-        EntityManagerInterface $entityManager
+    #[Route('forums/{category}/add', name: 'app_post_add')]
+    public function addPost(
+        ForumRepository $forumRepository,
+        PostRepository $postRepository,
+        Request $request
     ): Response {
-        if (!$comment) {
-            return $this->json(['error' => 'Comment not found'], 404);
+        $forums = $forumRepository->findAllOrderedByTitle();
+        $category = urldecode($request->attributes->get('category'));
+        if (!$category) {
+            $category = 'General';
         }
 
-        $user = $this->getUser();
-        if (!$user) {
-            return $this->json(['error' => 'Unauthorized'], 401);
+        $post = new Post();
+        // Préselection du forum si catégorie courante
+        if ($category !== 'General') {
+            foreach ($forums as $forum) {
+                if ($forum->getTitle() === $category) {
+                    $post->setForum($forum);
+                    break;
+                }
+            }
+        }
+        $form = $this->createForm(PostFormType::class, $post);
+
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $post = $form->getData();
+            $post->setUser($this->getUser());
+            $post->setCreationDate(new \DateTime());
+            $post->setLastActivity(new \DateTime());
+            $postRepository->addPost($post);
+            return $this->redirectToRoute('app_forums', [
+                'category' => $post->getForum()->getTitle(),
+                'postId' => $post->getId(),
+            ]);
         }
 
-        $existingLike = $userLikeRepository->findOneBy(['user' => $user, 'comment' => $comment]);
-        if ($existingLike) {
-            $entityManager->remove($existingLike);
-            $entityManager->flush();
-            return $this->json(['liked' => false]);
-        }
-
-        $like = new UserLike();
-        $like->setUser($user);
-        $like->setComment($comment);
-
-        $entityManager->persist($like);
-        $entityManager->flush();
-
-        return $this->json(['liked' => true]);
+        return $this->render('forum/create_post.html.twig', [
+            'forums' => $forums,
+            'category' => $category,
+            'form' => $form->createView(),
+        ]);
     }
 
-    #[Route('forums/{category}/{postId?}', name: 'app_forums')]
+    #[Route('forums/{category}/{postId}', name: 'app_forums', requirements: ['postId' => '\d+'])]
+    #[Route('forums/{category}', name: 'app_forums_no_post')]
     public function index(
         ForumRepository $forumRepository, 
         PostRepository $postRepository, 
@@ -70,6 +85,18 @@ class ForumController extends AbstractController
         } else {
             $posts = $postRepository->findByForum($category);
         }
+
+        $post = new Post();
+        // Préselection du forum si catégorie courante
+        if ($category !== 'General') {
+            foreach ($forums as $forum) {
+                if ($forum->getTitle() === $category) {
+                    $post->setForum($forum);
+                    break;
+                }
+            }
+        }
+        $form = $this->createForm(PostFormType::class, $post);
 
         $selectedPost = null;
         $comments = null;
@@ -114,6 +141,40 @@ class ForumController extends AbstractController
             'comments' => $comments,
             'likes' => $likes,
             'userLikes' => $userLikes,
+            'form' => $form,
         ]);
+    }
+
+    #[Route('/like/{id}', name: 'app_forums_like', methods: ['POST'])]
+    public function likeComment(
+        ?Comment $comment,
+        CommentRepository $commentRepository, 
+        UserLikeRepository $userLikeRepository, 
+        EntityManagerInterface $entityManager
+    ): Response {
+        if (!$comment) {
+            return $this->json(['error' => 'Comment not found'], 404);
+        }
+
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $existingLike = $userLikeRepository->findOneBy(['user' => $user, 'comment' => $comment]);
+        if ($existingLike) {
+            $entityManager->remove($existingLike);
+            $entityManager->flush();
+            return $this->json(['liked' => false]);
+        }
+
+        $like = new UserLike();
+        $like->setUser($user);
+        $like->setComment($comment);
+
+        $entityManager->persist($like);
+        $entityManager->flush();
+
+        return $this->json(['liked' => true]);
     }
 }

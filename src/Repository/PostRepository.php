@@ -35,6 +35,12 @@ class PostRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    public function addPost(Post $post): void
+    {
+        $this->getEntityManager()->persist($post);
+        $this->getEntityManager()->flush();
+    }
+
      
     // /**
     //     * @return Post[] Returns an array of Post objects

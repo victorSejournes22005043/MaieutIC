@@ -3,6 +3,8 @@
 namespace App\Form;
 
 use App\Entity\Post;
+use App\Entity\Forum;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -15,19 +17,28 @@ class PostFormType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('title', TextType::class, [
+            ->add('name', TextType::class, [
+                'label' => 'Titre',
                 'constraints' => [
                     new NotBlank([
-                        'message' => 'Please enter a title',
+                        'message' => 'Veuillez entrer un titre',
                     ]),
                 ],
             ])
-            ->add('body', TextareaType::class, [
+            ->add('description', TextareaType::class, [
+                'label' => 'Description',
                 'constraints' => [
                     new NotBlank([
-                        'message' => 'Please enter the body of the post',
+                        'message' => 'Veuillez entrer la description',
                     ]),
                 ],
+            ])
+            ->add('forum', EntityType::class, [
+                'class' => Forum::class,
+                'choice_label' => 'title',
+                'label' => 'Salon',
+                'placeholder' => '-- Choisir un salon --',
+                'required' => true,
             ]);
     }
 
