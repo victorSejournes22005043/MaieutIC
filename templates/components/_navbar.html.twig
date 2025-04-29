@@ -1,5 +1,5 @@
 <nav class="sticky top-0 z-20 bg-white">
-    <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4 h-24">
+    <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4 h-20">
         <!-- div aligned to the left -->
         <div class="flex-shrink-0 h-full">
             <a href="{{ path('app_home') }}"><img src="{{ asset('images/logo.png') }}" alt="logo" class="h-full"/></a>
@@ -24,11 +24,11 @@
             {% else %}
                 <!-- Display the sign in and login button if user is logged off -->
                 <button type="button" onclick="window.location.href='{{ path('app_login') }}'"
-                    class="text-black hover:text-blue-800">
+                    class="text-black hover:text-blue-600 font-medium">
                     Se connecter
                 </button>
                 <button type="button" onclick="window.location.href='{{ path('app_register') }}'"
-                    class="text-white bg-blue-900 hover:bg-blue-950 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-800 dark:hover:bg-blue-900 focus:outline-none dark:focus:ring-blue-800">
+                    class="text-white bg-blue-600 hover:bg-blue-700 focus:ring-2 focus:ring-indigo-500 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
                     S'inscrire
                 </button>
             {% endif %}
