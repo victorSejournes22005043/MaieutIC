@@ -1,0 +1,31 @@
+{% if is_granted('IS_AUTHENTICATED_FULLY') %}
+<div id="author-create-modal" class="fixed inset-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-[1000] hidden">
+    <div class="bg-white p-5 rounded-lg w-[90%] max-w-[500px] shadow-lg relative">
+        <h2 class="text-xl font-bold mb-4">Créer un nouveau post</h2>
+        <form id="post-create-form" method="POST" action="/post/create">
+            <div class="mb-4">
+                <label for="post-title" class="block text-sm font-medium text-gray-700">Titre</label>
+                <input type="text" id="post-title" name="title" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required>
+            </div>
+            <div class="mb-4">
+                <label for="post-content" class="block text-sm font-medium text-gray-700">Contenu</label>
+                <textarea id="post-content" name="content" rows="5" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required></textarea>
+            </div>
+            <div class="mb-4">
+                <label for="post-category" class="block text-sm font-medium text-gray-700">Catégorie</label>
+                <select id="post-category" name="category" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required>
+                    <option value="" disabled selected>Choisir une catégorie</option>
+                    <option value="general">Général</option>
+                    <option value="news">Actualités</option>
+                    <option value="discussion">Discussion</option>
+                    <!-- Ajouter d'autres catégories si nécessaire -->
+                </select>
+            </div>
+            <div class="flex justify-end">
+                <button type="button" class="mr-2 px-4 py-2 bg-gray-300 rounded-md" onclick="document.getElementById('author-create-modal').classList.add('hidden')">Annuler</button>
+                <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-md">Créer</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
