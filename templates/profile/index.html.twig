@@ -1,20 +1,66 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello ProfileController!{% endblock %}
+{% block title %}Profil{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
+{{ render(controller('App\\Controller\\NavbarController::navbar')) }}
+<div class="flex items-center bg-gray-200 p-8 pr-0 rounded-lg shadow-md max-w-3xl mx-auto mt-8">
+    <div class="w-36 h-36 rounded-full flex items-center justify-center mr-8 overflow-hidden bg-white border border-gray-300">
+        <img
+            src="{{ user.profileImageUrl ?? asset('images/default-profile.png') }}"
+            alt="Photo de profil"
+            class="w-36 h-36 object-contain rounded-full"
+        />
+    </div>
+    <div class="text-indigo-900">
+        <h2 class="m-0 text-3xl font-bold">{{ user.username|default('Utilisateur') }}</h2>
+        <div class="text-xl mb-2">
+            {{ user.firstName|default('Nom') }} {{ user.lastName|default('Prénom') }}
+        </div>
+        <div class="text-indigo-500 text-base">
+            {{ user.affiliationLocation}}
+            {% if user.specialization %}
+                · {{ user.specialization }}
+            {% endif %}
+        </div>
+    </div>
+</div>
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
+<div class="max-w-3xl mx-auto mt-6 space-y-4">
+    {# Affichage des questions classiques #}
+    {% for key, answers in userQuestions %}
+        {% if key starts with 'Question ' %}
+            <div class="bg-gray-100 rounded-lg p-4">
+                <h3 class="font-bold text-lg border-b border-indigo-200 pb-1 mb-1">
+                    {{ questionLabels[key] ?? key }}
+                </h3>
+                <div>
+                    {% for answer in answers %}
+                        <div class="break-words whitespace-pre-line">{{ answer }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    {% endfor %}
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>D:/Users/User/Documents/Etudes/BUT info/3eme année/stage/MaieutIC/src/Controller/ProfileController.php</code></li>
-        <li>Your template at <code>D:/Users/User/Documents/Etudes/BUT info/3eme année/stage/MaieutIC/templates/profile/index.html.twig</code></li>
-    </ul>
+    {# Affichage des questions taggables (tags) #}
+    {% for tagKey, label in taggableLabels %}
+        {% set tags = [] %}
+        {% for k, answers in userQuestions %}
+            {% if k == tagKey %}
+                {% set tags = tags|merge(answers) %}
+            {% endif %}
+        {% endfor %}
+        {% if tags|length > 0 %}
+            <div class="bg-gray-100 rounded-lg p-4">
+                <h3 class="font-bold text-lg border-b border-indigo-200 pb-1 mb-1">{{ label }}</h3>
+                <div class="flex flex-wrap gap-2">
+                    {% for tag in tags %}
+                        <span class="px-2 py-1 bg-indigo-50 text-indigo-800 rounded font-medium text-sm break-words">{{ tag }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    {% endfor %}
 </div>
 {% endblock %}
