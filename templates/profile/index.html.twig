@@ -1,20 +1,94 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello ProfileController!{% endblock %}
+{% block title %}Profil{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
-
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
-
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>D:/Users/User/Documents/Etudes/BUT info/3eme année/stage/MaieutIC/src/Controller/ProfileController.php</code></li>
-        <li>Your template at <code>D:/Users/User/Documents/Etudes/BUT info/3eme année/stage/MaieutIC/templates/profile/index.html.twig</code></li>
-    </ul>
+{{ render(controller('App\\Controller\\NavbarController::navbar')) }}
+<div class="flex items-center bg-gray-200 p-8 pr-0 rounded-lg shadow-md max-w-3xl mx-auto mt-8">
+    <div class="w-36 h-36 rounded-full flex items-center justify-center mr-8 overflow-hidden bg-white border border-gray-300">
+        <img
+            src="{{ user.profileImageUrl ?? asset('images/default-profile.png') }}"
+            alt="Photo de profil"
+            class="w-36 h-36 object-contain rounded-full"
+        />
+    </div>
+    <div class="text-indigo-900">
+        <h2 class="m-0 text-3xl font-bold">{{ user.username|default('Utilisateur') }}</h2>
+        <div class="text-xl mb-2">
+            {{ user.firstName|default('Nom') }} {{ user.lastName|default('Prénom') }}
+        </div>
+        <div class="text-indigo-500 text-base">
+            {{ user.affiliationLocation}}
+            {% if user.specialization %}
+                · {{ user.specialization }}
+            {% endif %}
+        </div>
+    </div>
 </div>
+
+<div class="max-w-3xl mx-auto mt-6 flex justify-center gap-6">
+    <button id="tab-overview" class="px-6 py-2 rounded bg-indigo-700 text-white font-semibold focus:outline-none" data-tab="overview">
+        Vue d’ensemble
+    </button>
+    <button id="tab-posts" class="px-6 py-2 rounded bg-indigo-900 text-white font-semibold focus:outline-none" data-tab="posts">
+        Posts
+    </button>
+    <button id="tab-comments" class="px-6 py-2 rounded bg-indigo-900 text-white font-semibold focus:outline-none" data-tab="comments">
+        Commentaires
+    </button>
+</div>
+
+<div id="profile-tab-content" class="max-w-3xl mx-auto mt-6 space-y-4">
+    {% include 'profile/_overview.html.twig' %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const tabContent = document.getElementById('profile-tab-content');
+    const tabs = {
+        overview: document.getElementById('tab-overview'),
+        posts: document.getElementById('tab-posts'),
+        comments: document.getElementById('tab-comments')
+    };
+
+    function setActive(tab) {
+        for (const key in tabs) {
+            if (key === tab) {
+                tabs[key].classList.remove('bg-indigo-900');
+                tabs[key].classList.add('bg-indigo-700');
+            } else {
+                tabs[key].classList.remove('bg-indigo-700');
+                tabs[key].classList.add('bg-indigo-900');
+            }
+        }
+    }
+
+    tabs.overview.addEventListener('click', function () {
+        setActive('overview');
+        fetch('{{ path("app_profile") }}', {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+            .then(r => r.text())
+            .then(html => {
+                // Extraire le bloc overview du HTML retourné
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const overview = doc.querySelector('#profile-tab-content');
+                tabContent.innerHTML = overview ? overview.innerHTML : '';
+            });
+    });
+
+    tabs.posts.addEventListener('click', function () {
+        setActive('posts');
+        fetch('{{ path("app_profile_posts") }}')
+            .then(r => r.text())
+            .then(html => { tabContent.innerHTML = html; });
+    });
+
+    tabs.comments.addEventListener('click', function () {
+        setActive('comments');
+        fetch('{{ path("app_profile_comments") }}')
+            .then(r => r.text())
+            .then(html => { tabContent.innerHTML = html; });
+    });
+});
+</script>
 {% endblock %}
