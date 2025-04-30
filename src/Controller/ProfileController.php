@@ -7,6 +7,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Bundle\SecurityBundle\Security;
 use App\Entity\UserQuestions;
+use App\Repository\PostRepository;
+use App\Repository\CommentRepository;
+use Symfony\Component\HttpFoundation\Request;
 
 final class ProfileController extends AbstractController{
     #[Route('/profile', name: 'app_profile')]
@@ -50,6 +53,32 @@ final class ProfileController extends AbstractController{
             'userQuestions' => $userQuestions,
             'questionLabels' => $questionLabels,
             'taggableLabels' => $taggableLabels,
+        ]);
+    }
+
+    #[Route('/profile/posts', name: 'app_profile_posts')]
+    public function posts(Security $security, PostRepository $postRepository): Response
+    {
+        $user = $security->getUser();
+        $posts = [];
+        if ($user) {
+            $posts = $postRepository->findBy(['user' => $user]);
+        }
+        return $this->render('profile/_posts.html.twig', [
+            'posts' => $posts,
+        ]);
+    }
+
+    #[Route('/profile/comments', name: 'app_profile_comments')]
+    public function comments(Security $security, CommentRepository $commentRepository): Response
+    {
+        $user = $security->getUser();
+        $comments = [];
+        if ($user) {
+            $comments = $commentRepository->findBy(['user' => $user]);
+        }
+        return $this->render('profile/_comments.html.twig', [
+            'comments' => $comments,
         ]);
     }
 }
