@@ -11,12 +11,12 @@
 
 <div class="container mx-auto py-6">
     <div class="flex justify-center space-x-4 mb-6">
-        <button onclick="window.location.href='{{ path('app_library') }}'" class="bg-slate-100 text-gray-700 flex-grow px-4 py-2 rounded-lg font-medium hover:bg-[#e8edf1] focus:outline-none focus:ring-2 focus:ring-gray-400 active:bg-gray-400">Auteurs</button>
-        <button class="bg-blue-800 text-white flex-grow px-4 py-2 rounded-lg font-medium hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 active:bg-blue-900">Articles</button>
-        <button onclick="window.location.href='{{ path('app_library_books') }}'" class="bg-slate-100 text-gray-700 flex-grow px-4 py-2 rounded-lg font-medium hover:bg-[#e8edf1] focus:outline-none focus:ring-2 focus:ring-gray-400 active:bg-gray-400">Livres</button>
+        <button onclick="window.location.href='{{ path('app_library') }}'" class="bg-white/45 text-gray-700 backdrop-blur-sm shadow-lg flex-grow px-4 py-2 rounded-lg font-medium hover:bg-gray-200/45 focus:outline-none focus:ring-2 focus:ring-gray-400 active:bg-gray-400">Auteurs</button>
+        <button class="bg-blue-600 text-white flex-grow px-4 py-2 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 active:bg-blue-900">Articles</button>
+        <button onclick="window.location.href='{{ path('app_library_books') }}'" class="bg-white/45 text-gray-700 backdrop-blur-sm shadow-lg flex-grow px-4 py-2 rounded-lg font-medium hover:bg-gray-200/45 focus:outline-none focus:ring-2 focus:ring-gray-400 active:bg-gray-400">Livres</button>
     </div>
 
-    <div class="bg-slate-100 flex flex-wrap p-6 rounded-lg">
+    <div class="bg-white/45 backdrop-blur-sm shadow-xl flex flex-wrap p-6 rounded-lg">
         {% if app.user and app.user.userType == 1 %}
             <div class="w-full flex justify-end mb-4">
                 <button class="inline-block px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition" onclick="openArticleCreateModal()">Ajouter un article</button>
@@ -31,7 +31,7 @@
         </div>
         <tbody>
             {% for article in articles %}
-            <div class="bg-white flex flex-row rounded-lg w-full my-1 p-3 items-center">
+            <div class="bg-white hover:bg-blue-50 flex flex-row rounded-lg w-full my-1 p-3 items-center">
                 <a href="{{ article.link }}" target="_blank" class="w-1/2">{{ article.title }}</a>
                 <p class="flex-1">{{ article.author }}</p>
                 {% if app.user and app.user.userType == 1 %}

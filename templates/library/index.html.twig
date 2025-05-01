@@ -14,9 +14,9 @@
         
         <!-- Navigation Buttons -->
         <div class="flex justify-center space-x-4 mb-6">
-            <button class="bg-blue-700 text-white backdrop-blur-sm shadow-md flex-grow px-4 py-2 rounded-lg font-medium hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 active:bg-blue-900">Auteurs</button>
-            <button onclick="window.location.href='{{ path('app_library_articles') }}'" class="bg-white/45 text-gray-700 backdrop-blur-sm shadow-lg flex-grow px-4 py-2 rounded-lg font-medium hover:bg-[#e8edf1] focus:outline-none focus:ring-2 focus:ring-gray-400 active:bg-gray-400">Articles</button>
-            <button onclick="window.location.href='{{ path('app_library_books') }}'" class="bg-white/45 text-gray-700 backdrop-blur-sm shadow-lg flex-grow px-4 py-2 rounded-lg font-medium hover:bg-[#e8edf1] focus:outline-none focus:ring-2 focus:ring-gray-400 active:bg-gray-400">Livres</button>
+            <button class="bg-blue-700 text-white backdrop-blur-sm shadow-lg flex-grow px-4 py-2 rounded-lg font-medium hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 active:bg-blue-900">Auteurs</button>
+            <button onclick="window.location.href='{{ path('app_library_articles') }}'" class="bg-white/45 text-gray-700 backdrop-blur-sm shadow-lg flex-grow px-4 py-2 rounded-lg font-medium hover:bg-gray-200/45 focus:outline-none focus:ring-2 focus:ring-gray-400 active:bg-gray-400">Articles</button>
+            <button onclick="window.location.href='{{ path('app_library_books') }}'" class="bg-white/45 text-gray-700 backdrop-blur-sm shadow-lg flex-grow px-4 py-2 rounded-lg font-medium hover:bg-gray-200/45 focus:outline-none focus:ring-2 focus:ring-gray-400 active:bg-gray-400">Livres</button>
         </div>
 
         <!-- Authors Grid -->
@@ -37,7 +37,7 @@
 
             <div class="flex flex-wrap">
                 {% for author in authors %}
-                    <div class="bg-white rounded-lg overflow-hidden relative w-44 h-72 m-4 p-3 author-card" data-author-id="{{ author.id }}">
+                    <div class="bg-white hover:bg-blue-50 rounded-lg overflow-hidden relative w-44 h-72 m-4 p-3 author-card" data-author-id="{{ author.id }}">
                         <a href="{{ author.link }}" target="_blank">
                             <img src="{{ author.image }}" alt="{{ author.name }}" class="w-full h-40 object-cover rounded-lg">
                         </a>
