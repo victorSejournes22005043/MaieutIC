@@ -20,7 +20,7 @@
         </div>
 
         <!-- Authors Grid -->
-        <div id="authors-grid" class="bg-white/45 backdrop-blur-sm shadow-xl p-4 rounded-lg">
+        <div class="bg-white/45 backdrop-blur-sm shadow-xl p-4 rounded-lg">
             <!-- Tag Filter Bar -->
             <div class="mb-6">
                 <div class="relative w-full max-w-md mx-auto">
@@ -35,7 +35,7 @@
                 </div>
             {% endif %}
 
-            <div class="flex flex-wrap">
+            <div id="authors-grid" class="flex flex-wrap">
                 {% for author in authors %}
                     <div class="bg-white hover:bg-blue-50 rounded-lg overflow-hidden relative w-44 h-72 m-4 p-3 author-card" data-author-id="{{ author.id }}">
                         <a href="{{ author.link }}" target="_blank">
