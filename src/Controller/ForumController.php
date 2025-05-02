@@ -98,6 +98,7 @@ class ForumController extends AbstractController
             }
         }
         $form = $this->createForm(PostFormType::class, $post);
+        $editForm = $this->createForm(PostFormType::class, $post);
 
         $selectedPost = null;
         $comments = null;
@@ -143,6 +144,7 @@ class ForumController extends AbstractController
             'likes' => $likes,
             'userLikes' => $userLikes,
             'form' => $form,
+            'editForm' => $editForm,
         ]);
     }
 
@@ -238,6 +240,41 @@ class ForumController extends AbstractController
 
         return $this->redirectToRoute('app_forums', [
             'category' => $category,
+        ]);
+    }
+
+    #[Route('forums/posts/data/{postId}', name: 'app_post_data', methods: ['GET'])]
+    public function getPostData(
+        PostRepository $postRepository,
+        CommentRepository $commentRepository,
+        UserLikeRepository $userLikeRepository,
+        int $postId
+    ): Response {
+        $post = $postRepository->find($postId);
+        if (!$post) {
+            return $this->json(['error' => 'Post not found'], 404);
+        }
+
+        $comments = $commentRepository->findByPost($postId);
+        $likes = [];
+        foreach ($comments as $comment) {
+            $likes[] = [
+                'commentId' => $comment->getId(),
+                'likeCount' => $userLikeRepository->countByCommentId($comment->getId()),
+            ];
+        }
+
+        return $this->json([
+            'post' => [
+                'id' => $post->getId(),
+                'name' => $post->getName(),
+                'description' => $post->getDescription(),
+                'creationDate' => $post->getCreationDate()->format('Y-m-d H:i:s'),
+                'lastActivity' => $post->getLastActivity()->format('Y-m-d H:i:s'),
+                'forumId' => $post->getForum() ? $post->getForum()->getId() : null, // <-- Ajouté
+            ],
+            'comments' => $comments,
+            'likes' => $likes,
         ]);
     }
 }
