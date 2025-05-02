@@ -16,6 +16,7 @@ use Symfony\Component\HttpFoundation\Request;
 use App\Form\formType;
 use App\Entity\Post;
 use App\Form\PostFormType;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 class ForumController extends AbstractController
 {
@@ -176,5 +177,67 @@ class ForumController extends AbstractController
         $entityManager->flush();
 
         return $this->json(['liked' => true]);
+    }
+
+    #[Route('forums/{category}/{postId}/edit', name: 'app_post_edit')]
+    public function editPost(
+        ForumRepository $forumRepository,
+        PostRepository $postRepository,
+        Request $request,
+        int $postId
+    ): Response {
+        $post = $postRepository->find($postId);
+        if (!$post) {
+            throw $this->createNotFoundException('Post not found');
+        }
+        if ($post->getUser() !== $this->getUser()) {
+            throw new AccessDeniedException('Vous ne pouvez modifier que vos propres posts.');
+        }
+
+        $forums = $forumRepository->findAllOrderedByTitle();
+        $form = $this->createForm(PostFormType::class, $post);
+
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $postRepository->addPost($post);
+            return $this->redirectToRoute('app_forums', [
+                'category' => $post->getForum()->getTitle(),
+                'postId' => $post->getId(),
+            ]);
+        }
+
+        return $this->render('forum/edit_post.html.twig', [
+            'form' => $form->createView(),
+            'forums' => $forums,
+            'category' => $post->getForum()->getTitle(),
+            'post' => $post,
+        ]);
+    }
+
+    #[Route('forums/{category}/delete/{postId}', name: 'app_post_delete', methods: ['POST'])]
+    public function deletePost(
+        PostRepository $postRepository,
+        Request $request,
+        int $postId
+    ): Response {
+        $post = $postRepository->find($postId);
+        if (!$post) {
+            throw $this->createNotFoundException('Post not found');
+        }
+        if ($post->getUser() !== $this->getUser()) {
+            throw new AccessDeniedException('Vous ne pouvez supprimer que vos propres posts.');
+        }
+
+        // Protection CSRF
+        if (!$this->isCsrfTokenValid('delete_post_' . $postId, $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Invalid CSRF token');
+        }
+
+        $category = $post->getForum()->getTitle();
+        $postRepository->removePost($post);
+
+        return $this->redirectToRoute('app_forums', [
+            'category' => $category,
+        ]);
     }
 }

@@ -44,6 +44,17 @@
                     <div class="mt-5">
                         <p class="text-gray-700">{{ selectedPost.description }}</p>
                     </div>
+                    {% if app.user and (app.user.id == selectedPost.user.id or app.user.userType == 1) %}
+                        <div class="mt-4 flex gap-2">
+                            {% if app.user.id == selectedPost.user.id %}
+                                <a href="{{ path('app_post_edit', { category: category, postId: selectedPost.id }) }}" class="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded">Modifier</a>
+                            {% endif %}
+                            <form action="{{ path('app_post_delete', { category: category, postId: selectedPost.id }) }}" method="post" style="display:inline;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_post_' ~ selectedPost.id) }}">
+                                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded" onclick="return confirm('Supprimer ce post ?')">Supprimer</button>
+                            </form>
+                        </div>
+                    {% endif %}
                 </div>
                 <div class="mt-5">
                     <h3 class="text-xl font-semibold text-gray-700">{{ comments|length }} commentaires</h3>
