@@ -7,11 +7,16 @@
             {{ form_row(form.title) }}
             {{ form_row(form.author) }}
             {{ form_row(form.link) }}
-
             <div class="mb-4">
                 {{ form_label(form.tags) }}
-                {{ form_widget(form.tags, {'attr': {'class': 'w-full p-2 border border-gray-300 rounded', 'multiple': false}}) }}
-                <div id="selected-article-tags-edit" class="mt-2 flex flex-wrap gap-2"></div>
+                <div class="relative w-full">
+                    <input id="article-edit-tag-search" type="text" placeholder="Rechercher un mot-clé..." class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400" autocomplete="off">
+                    <div id="article-edit-tag-suggestions" class="absolute left-0 right-0 bg-white border border-gray-200 rounded shadow z-10 mt-1 hidden"></div>
+                </div>
+                <div id="article-edit-active-tags" class="mt-2 flex flex-wrap gap-2"></div>
+                <div style="display: none;"> // to hide the original tags field
+                    {{ form_widget(form.tags) }}
+                </div>
                 {{ form_errors(form.tags) }}
             </div>
             <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Enregistrer</button>
@@ -19,108 +24,133 @@
     </div>
 </div>
 <script>
-    function setupTagSelectArticleEdit() {
-        const form = document.getElementById('article-edit-form');
-        if (!form) return;
-        const select = form.querySelector('select');
-        const tagDisplay = document.getElementById('selected-article-tags-edit');
-        if (!select || !tagDisplay) return;
-        const newSelect = select.cloneNode(true);
-        select.parentNode.replaceChild(newSelect, select);
-        newSelect.removeAttribute('multiple');
-        if (!newSelect.querySelector('option[disabled][value=""]')) {
-            const placeholder = document.createElement('option');
-            placeholder.value = '';
-            placeholder.disabled = true;
-            placeholder.selected = true;
-            placeholder.hidden = true;
-            placeholder.textContent = '-- Choisir des mots-clés --';
-            newSelect.insertBefore(placeholder, newSelect.firstChild);
-        }
-        const inputName = newSelect.name.replace(/\[\]$/, '');
-        Array.from(newSelect.options).forEach(opt => {
-            if (opt.disabled && opt.value === '') {
-                opt.selected = true;
-            } else {
-                opt.selected = false;
-            }
-        });
-        newSelect.addEventListener('change', (e) => {
-            const selectedOption = newSelect.selectedOptions[0];
-            const tagName = selectedOption.textContent.trim();
-            const tagId = selectedOption.value;
-            if (!tagId || tagDisplay.querySelector(`input[value="${tagId}"]`)) return;
+function debounce(fn, delay) {
+    let timeout;
+    return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => fn.apply(this, args), delay);
+    };
+}
+let articleEditSelectedTags = [];
+function setupArticleEditTagSearch() {
+    const input = document.getElementById('article-edit-tag-search');
+    const suggestions = document.getElementById('article-edit-tag-suggestions');
+    const activeTags = document.getElementById('article-edit-active-tags');
+    input.value = '';
+    suggestions.innerHTML = '';
+    suggestions.classList.add('hidden');
+    input.oninput = debounce(function() {
+        fetchTags(this.value.trim());
+    }, 200);
+
+    input.onfocus = function() {
+        fetchTags('');
+    };
+
+    function fetchTags(query) {
+        fetch('{{ path('app_tag_search') }}?q=' + encodeURIComponent(query))
+            .then(r => r.json())
+            .then(tags => {
+                suggestions.innerHTML = '';
+                tags.forEach(tag => {
+                    if (articleEditSelectedTags.find(t => t.id == tag.id)) return;
+                    const div = document.createElement('div');
+                    div.className = 'px-4 py-2 hover:bg-blue-100 cursor-pointer';
+                    div.textContent = tag.name;
+                    div.onclick = () => {
+                        articleEditSelectedTags.push({id: tag.id, name: tag.name});
+                        renderArticleEditActiveTags();
+                        suggestions.innerHTML = '';
+                        suggestions.classList.add('hidden');
+                        input.value = '';
+                    };
+                    suggestions.appendChild(div);
+                });
+                if (tags.length > 0) {
+                    suggestions.classList.remove('hidden');
+                } else {
+                    suggestions.classList.add('hidden');
+                }
+            });
+    }
+    function renderArticleEditActiveTags() {
+        activeTags.innerHTML = '';
+        articleEditSelectedTags.forEach(tag => {
+            const span = document.createElement('span');
+            span.className = 'bg-indigo-100 text-indigo-800 text-sm font-medium px-3 py-1 rounded-full flex items-center gap-1';
+            span.innerHTML = `
+                ${tag.name}
+                <button type="button" class="remove-tag text-indigo-600 font-bold hover:text-red-500" data-tag-id="${tag.id}">&times;</button>
+            `;
             const hidden = document.createElement('input');
             hidden.type = 'hidden';
-            hidden.name = `${inputName}[]`;
-            hidden.value = tagId;
-            const tag = document.createElement('span');
-            tag.className = 'bg-indigo-100 text-indigo-800 text-sm font-medium px-3 py-1 rounded-full flex items-center gap-1';
-            tag.innerHTML = `
-                ${tagName}
-                <button type="button" class="remove-tag text-indigo-600 font-bold hover:text-red-500" data-tag-id="${tagId}">&times;</button>
-            `;
-            tag.appendChild(hidden);
-            tagDisplay.appendChild(tag);
-            tag.querySelector('.remove-tag').addEventListener('click', () => {
-                tag.remove();
-            });
-            Array.from(newSelect.options).forEach(opt => {
-                if (opt.disabled && opt.value === '') {
-                    opt.selected = true;
-                } else {
-                    opt.selected = false;
-                }
-            });
+            hidden.name = 'article[tags][]';
+            hidden.value = tag.id;
+            span.appendChild(hidden);
+            span.querySelector('.remove-tag').onclick = () => {
+                articleEditSelectedTags = articleEditSelectedTags.filter(t => t.id != tag.id);
+                renderArticleEditActiveTags();
+            };
+            activeTags.appendChild(span);
         });
-        form.addEventListener('submit', function() {
-            Array.from(newSelect.options).forEach(opt => {
-                if (!opt.disabled) opt.selected = false;
-            });
-        });
-        form._tagSelect = newSelect;
     }
-    function openArticleEditModal(id) {
-        const form = document.getElementById('article-edit-form');
-        const tagDisplay = document.getElementById('selected-article-tags-edit');
-        const editUrl = `{{ path('app_article_edit', {'id': 'PLACEHOLDER'}) }}`.replace('PLACEHOLDER', id);
-        form.action = editUrl;
-        fetch(`/library/article/data/${id}`)
-            .then(response => response.json())
-            .then(data => {
-                form.querySelector('[name$="[title]"]').value = data.title;
-                form.querySelector('[name$="[author]"]').value = data.author;
-                form.querySelector('[name$="[link]"]').value = data.link;
-                tagDisplay.innerHTML = '';
-                Array.from(form.querySelectorAll('input[type="hidden"][name^="article[tags]"]')).forEach(e => e.remove());
-                setupTagSelectArticleEdit();
-                if (data.tags) {
-                    data.tags.forEach(tag => {
-                        const hidden = document.createElement('input');
-                        hidden.type = 'hidden';
-                        hidden.name = 'article[tags][]';
-                        hidden.value = tag.id;
-                        const tagSpan = document.createElement('span');
-                        tagSpan.className = 'bg-indigo-100 text-indigo-800 text-sm font-medium px-3 py-1 rounded-full flex items-center gap-1';
-                        tagSpan.innerHTML = `
-                            ${tag.name}
-                            <button type="button" class="remove-tag text-indigo-600 font-bold hover:text-red-500" data-tag-id="${tag.id}">&times;</button>
-                        `;
-                        tagSpan.appendChild(hidden);
-                        tagDisplay.appendChild(tagSpan);
-                        tagSpan.querySelector('.remove-tag').addEventListener('click', () => {
-                            tagSpan.remove();
-                        });
-                    });
-                }
-                document.getElementById('article-edit-modal').classList.remove('hidden');
-            });
-    }
-    function closeArticleEditModal() {
-        document.getElementById('article-edit-modal').classList.add('hidden');
-    }
-    document.addEventListener('DOMContentLoaded', function() {
-        setupTagSelectArticleEdit();
+    document.addEventListener('click', function(e) {
+        if (!input.contains(e.target) && !suggestions.contains(e.target)) {
+            suggestions.classList.add('hidden');
+        }
     });
+    document.getElementById('article-edit-form').addEventListener('submit', function() {
+        // nothing needed, hidden inputs are already in place
+    });
+}
+function openArticleEditModal(id) {
+    const form = document.getElementById('article-edit-form');
+    const editUrl = `{{ path('app_article_edit', {'id': 'PLACEHOLDER'}) }}`.replace('PLACEHOLDER', id);
+    form.action = editUrl;
+    fetch(`/library/article/data/${id}`)
+        .then(response => response.json())
+        .then(data => {
+            form.querySelector('[name$="[title]"]').value = data.title;
+            form.querySelector('[name$="[author]"]').value = data.author;
+            form.querySelector('[name$="[link]"]').value = data.link;
+            articleEditSelectedTags = [];
+            if (data.tags) {
+                data.tags.forEach(tag => {
+                    articleEditSelectedTags.push({id: tag.id, name: tag.name});
+                });
+            }
+            setupArticleEditTagSearch();
+            renderArticleEditActiveTags();
+            document.getElementById('article-edit-modal').classList.remove('hidden');
+        });
+    function renderArticleEditActiveTags() {
+        const activeTags = document.getElementById('article-edit-active-tags');
+        activeTags.innerHTML = '';
+        articleEditSelectedTags.forEach(tag => {
+            const span = document.createElement('span');
+            span.className = 'bg-indigo-100 text-indigo-800 text-sm font-medium px-3 py-1 rounded-full flex items-center gap-1';
+            span.innerHTML = `
+                ${tag.name}
+                <button type="button" class="remove-tag text-indigo-600 font-bold hover:text-red-500" data-tag-id="${tag.id}">&times;</button>
+            `;
+            const hidden = document.createElement('input');
+            hidden.type = 'hidden';
+            hidden.name = 'article[tags][]';
+            hidden.value = tag.id;
+            span.appendChild(hidden);
+            span.querySelector('.remove-tag').onclick = () => {
+                articleEditSelectedTags = articleEditSelectedTags.filter(t => t.id != tag.id);
+                renderArticleEditActiveTags();
+            };
+            activeTags.appendChild(span);
+        });
+    }
+}
+function closeArticleEditModal() {
+    document.getElementById('article-edit-modal').classList.add('hidden');
+}
+document.addEventListener('DOMContentLoaded', function() {
+    setupArticleEditTagSearch();
+});
 </script>
 {% endif %}

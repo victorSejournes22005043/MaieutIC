@@ -81,13 +81,17 @@
                 {% for field in registrationForm.taggableQuestions %}
                     <div class="taggable-question mt-5 group">
                         <label class="block text-sm font-semibold text-gray-700 mb-1 transition-colors">{{ taggable_questions[loop.index0] }}</label>
-                        {# On force le select à être simple (non multiple) #}
-                        {{ form_widget(field, {'attr': {
-                            'class': 'block w-full rounded-lg border border-gray-200 shadow-sm px-4 py-2',
-                            'multiple': false
-                        }}) }}
-                        {{ form_errors(field) }}
+                        <div class="relative w-full">
+                            <input type="text"
+                                   class="taggable-tag-search w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                   placeholder="Rechercher un mot-clé..." autocomplete="off">
+                            <div class="taggable-tag-suggestions absolute left-0 right-0 bg-white border border-gray-200 rounded shadow z-10 mt-1 hidden"></div>
+                        </div>
                         <div class="selected-tags mt-2 flex flex-wrap gap-2"></div>
+                        <div style="display: none;">
+                            {{ form_widget(field) }}
+                        </div>
+                        {{ form_errors(field) }}
                     </div>
                 {% endfor %}
             </div>
@@ -103,56 +107,100 @@
 </div>
 
 <script>
-document.querySelectorAll('.taggable-question').forEach((container) => {
-    const select = container.querySelector('select');
+function debounce(fn, delay) {
+    let timeout;
+    return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => fn.apply(this, args), delay);
+    };
+}
+
+document.querySelectorAll('.taggable-question').forEach((container, idx) => {
+    const input = container.querySelector('.taggable-tag-search');
+    const suggestions = container.querySelector('.taggable-tag-suggestions');
     const tagDisplay = container.querySelector('.selected-tags');
+    const hiddenSelect = container.querySelector('select');
+    let selectedTags = [];
 
-    // On retire l'attribut multiple pour forcer le menu déroulant classique
-    select.removeAttribute('multiple');
-
-    // Ajout d'un placeholder si non déjà présent
-    if (!select.querySelector('option[disabled][value=""]')) {
-        const placeholder = document.createElement('option');
-        placeholder.value = '';
-        placeholder.disabled = true;
-        placeholder.selected = true;
-        placeholder.hidden = true;
-        placeholder.textContent = '-- Choisir des mots-clés --';
-        select.insertBefore(placeholder, select.firstChild);
+    // Cache all tags from the select for local search fallback
+    let allTags = [];
+    if (hiddenSelect) {
+        allTags = Array.from(hiddenSelect.options)
+            .filter(opt => opt.value)
+            .map(opt => ({id: opt.value, name: opt.textContent}));
     }
 
-    // On adapte le nom pour permettre plusieurs valeurs (Symfony attend un tableau)
-    const inputName = select.name.replace(/\[\]$/, '');
-    select.removeAttribute('name');
+    input.value = '';
+    suggestions.innerHTML = '';
+    suggestions.classList.add('hidden');
+    tagDisplay.innerHTML = '';
 
-    select.addEventListener('change', (e) => {
-        const selectedOption = select.selectedOptions[0];
-        const tagName = selectedOption.textContent.trim();
-        const tagId = selectedOption.value;
+    input.oninput = debounce(function() {
+        fetchTags(this.value.trim());
+    }, 200);
 
-        if (!tagId || container.querySelector(`input[value="${tagId}"]`)) return;
+    input.onfocus = function() {
+        fetchTags('');
+    };
 
-        const hidden = document.createElement('input');
-        hidden.type = 'hidden';
-        hidden.name = `${inputName}[]`;
-        hidden.value = tagId;
+    function fetchTags(query) {
+        fetch('{{ path('app_tag_search') }}?q=' + encodeURIComponent(query))
+            .then(r => r.json())
+            .then(tags => {
+                suggestions.innerHTML = '';
+                tags.forEach(tag => {
+                    if (selectedTags.find(t => t.id == tag.id)) return;
+                    const div = document.createElement('div');
+                    div.className = 'px-4 py-2 hover:bg-blue-100 cursor-pointer';
+                    div.textContent = tag.name;
+                    div.onclick = () => {
+                        selectedTags.push({id: tag.id, name: tag.name});
+                        renderActiveTags();
+                        suggestions.innerHTML = '';
+                        suggestions.classList.add('hidden');
+                        input.value = '';
+                    };
+                    suggestions.appendChild(div);
+                });
+                if (tags.length > 0) {
+                    suggestions.classList.remove('hidden');
+                } else {
+                    suggestions.classList.add('hidden');
+                }
+            });
+    }
 
-        const tag = document.createElement('span');
-        tag.className = 'bg-indigo-100 text-indigo-800 text-sm font-medium px-3 py-1 rounded-full flex items-center gap-1';
-        tag.innerHTML = `
-            ${tagName}
-            <button type="button" class="remove-tag text-indigo-600 font-bold hover:text-red-500" data-tag-id="${tagId}">×</button>
-        `;
-
-        tag.appendChild(hidden);
-        tagDisplay.appendChild(tag);
-
-        tag.querySelector('.remove-tag').addEventListener('click', () => {
-            tag.remove();
+    function renderActiveTags() {
+        tagDisplay.innerHTML = '';
+        // Remove all hidden inputs from previous render
+        container.querySelectorAll('input[type="hidden"][name^="' + hiddenSelect.name.replace(/\[\]$/, '') + '"]').forEach(e => e.remove());
+        selectedTags.forEach(tag => {
+            const span = document.createElement('span');
+            span.className = 'bg-indigo-100 text-indigo-800 text-sm font-medium px-3 py-1 rounded-full flex items-center gap-1';
+            span.innerHTML = `
+                ${tag.name}
+                <button type="button" class="remove-tag text-indigo-600 font-bold hover:text-red-500" data-tag-id="${tag.id}">&times;</button>
+            `;
+            const hidden = document.createElement('input');
+            hidden.type = 'hidden';
+            hidden.name = hiddenSelect.name.replace(/\[\]$/, '') + '[]';
+            hidden.value = tag.id;
+            span.appendChild(hidden);
+            span.querySelector('.remove-tag').onclick = () => {
+                selectedTags = selectedTags.filter(t => t.id != tag.id);
+                renderActiveTags();
+            };
+            tagDisplay.appendChild(span);
         });
+    }
 
-        select.selectedIndex = 0;
+    document.addEventListener('click', function(e) {
+        if (!input.contains(e.target) && !suggestions.contains(e.target)) {
+            suggestions.classList.add('hidden');
+        }
     });
+
+    // On submit, nothing to do: hidden inputs are already in place
 });
 </script>
 {% endblock %}

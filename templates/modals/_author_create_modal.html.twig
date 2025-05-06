@@ -42,9 +42,14 @@
             
             <div class="mb-4">
                 {{ form_label(form.tags) }}
-                {# On force le select à être simple (non multiple) #}
-                {{ form_widget(form.tags, {'attr': {'class': 'w-full p-2 border border-gray-300 rounded', 'multiple': false}}) }}
-                <div id="selected-tags" class="mt-2 flex flex-wrap gap-2"></div>
+                <div class="relative w-full">
+                    <input id="author-create-tag-search" type="text" placeholder="Rechercher un mot-clé..." class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400" autocomplete="off">
+                    <div id="author-create-tag-suggestions" class="absolute left-0 right-0 bg-white border border-gray-200 rounded shadow z-10 mt-1 hidden"></div>
+                </div>
+                <div id="author-create-active-tags" class="flex flex-wrap gap-2 mt-2"></div>
+                <div style="display: none;"> // to hide the original tags field
+                    {{ form_widget(form.tags) }}
+                </div>
                 {{ form_errors(form.tags) }}
             </div>
 
@@ -53,79 +58,96 @@
     </div>
 </div>
 <script>
-    function openAuthorCreateModal() {
-        document.getElementById('author-create-modal').classList.remove('hidden');
-        setupTagSelectCreate(); // <-- Ajouté : réapplique la personnalisation à chaque ouverture
+function debounce(fn, delay) {
+    let timeout;
+    return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => fn.apply(this, args), delay);
+    };
+}
+let authorCreateSelectedTags = [];
+function openAuthorCreateModal() {
+    document.getElementById('author-create-modal').classList.remove('hidden');
+    setupAuthorCreateTagSearch();
+}
+function closeAuthorCreateModal() {
+    document.getElementById('author-create-modal').classList.add('hidden');
+}
+function setupAuthorCreateTagSearch() {
+    const input = document.getElementById('author-create-tag-search');
+    const suggestions = document.getElementById('author-create-tag-suggestions');
+    const activeTags = document.getElementById('author-create-active-tags');
+    authorCreateSelectedTags = [];
+    activeTags.innerHTML = '';
+    input.value = '';
+    suggestions.innerHTML = '';
+    suggestions.classList.add('hidden');
+    input.oninput = debounce(function() {
+        fetchTags(this.value.trim());
+    }, 200);
+
+    input.onfocus = function() {
+        fetchTags('');
+    };
+
+    function fetchTags(query) {
+        fetch('{{ path('app_tag_search') }}?q=' + encodeURIComponent(query))
+            .then(r => r.json())
+            .then(tags => {
+                suggestions.innerHTML = '';
+                tags.forEach(tag => {
+                    if (authorCreateSelectedTags.find(t => t.id == tag.id)) return;
+                    const div = document.createElement('div');
+                    div.className = 'px-4 py-2 hover:bg-blue-100 cursor-pointer';
+                    div.textContent = tag.name;
+                    div.onclick = () => {
+                        authorCreateSelectedTags.push({id: tag.id, name: tag.name});
+                        renderAuthorCreateActiveTags();
+                        suggestions.innerHTML = '';
+                        suggestions.classList.add('hidden');
+                        input.value = '';
+                    };
+                    suggestions.appendChild(div);
+                });
+                if (tags.length > 0) {
+                    suggestions.classList.remove('hidden');
+                } else {
+                    suggestions.classList.add('hidden');
+                }
+            });
     }
-    function closeAuthorCreateModal() {
-        document.getElementById('author-create-modal').classList.add('hidden');
-    }
-
-    function setupTagSelectCreate() {
-        const select = document.querySelector('#author-create-form select');
-        const tagDisplay = document.getElementById('selected-tags');
-        if (!select || !tagDisplay) return;
-
-        // Nettoyage : retire les anciens eventListeners en remplaçant le select par un clone
-        const newSelect = select.cloneNode(true);
-        select.parentNode.replaceChild(newSelect, select);
-
-        // On retire l'attribut multiple pour forcer le menu déroulant classique
-        newSelect.removeAttribute('multiple');
-
-        // Ajout d'un placeholder si non déjà présent
-        if (!newSelect.querySelector('option[disabled][value=""]')) {
-            const placeholder = document.createElement('option');
-            placeholder.value = '';
-            placeholder.disabled = true;
-            placeholder.selected = true;
-            placeholder.hidden = true;
-            placeholder.textContent = '-- Choisir des mots-clés --';
-            newSelect.insertBefore(placeholder, newSelect.firstChild);
-        }
-
-        const inputName = newSelect.name.replace(/\[\]$/, '');
-
-        newSelect.addEventListener('change', (e) => {
-            const selectedOption = newSelect.selectedOptions[0];
-            const tagName = selectedOption.textContent.trim();
-            const tagId = selectedOption.value;
-
-            if (!tagId || tagDisplay.querySelector(`input[value="${tagId}"]`)) return;
-
+    function renderAuthorCreateActiveTags() {
+        activeTags.innerHTML = '';
+        authorCreateSelectedTags.forEach(tag => {
+            const span = document.createElement('span');
+            span.className = 'bg-indigo-100 text-indigo-800 text-sm font-medium px-3 py-1 rounded-full flex items-center gap-1';
+            span.innerHTML = `
+                ${tag.name}
+                <button type="button" class="remove-tag text-indigo-600 font-bold hover:text-red-500" data-tag-id="${tag.id}">&times;</button>
+            `;
             const hidden = document.createElement('input');
             hidden.type = 'hidden';
-            hidden.name = `${inputName}[]`;
-            hidden.value = tagId;
-
-            const tag = document.createElement('span');
-            tag.className = 'bg-indigo-100 text-indigo-800 text-sm font-medium px-3 py-1 rounded-full flex items-center gap-1';
-            tag.innerHTML = `
-                ${tagName}
-                <button type="button" class="remove-tag text-indigo-600 font-bold hover:text-red-500" data-tag-id="${tagId}">&times;</button>
-            `;
-
-            tag.appendChild(hidden);
-            tagDisplay.appendChild(tag);
-
-            tag.querySelector('.remove-tag').addEventListener('click', () => {
-                tag.remove();
-            });
-
-            // Réaffiche le placeholder après ajout
-            newSelect.selectedIndex = 0;
-        });
-
-        // Nettoyer les tags cachés avant soumission pour éviter les doublons
-        document.getElementById('author-create-form').addEventListener('submit', function() {
-            Array.from(newSelect.options).forEach(opt => {
-                if (!opt.disabled) opt.selected = false;
-            });
+            hidden.name = 'author[tags][]';
+            hidden.value = tag.id;
+            span.appendChild(hidden);
+            span.querySelector('.remove-tag').onclick = () => {
+                authorCreateSelectedTags = authorCreateSelectedTags.filter(t => t.id != tag.id);
+                renderAuthorCreateActiveTags();
+            };
+            activeTags.appendChild(span);
         });
     }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        setupTagSelectCreate();
+    document.addEventListener('click', function(e) {
+        if (!input.contains(e.target) && !suggestions.contains(e.target)) {
+            suggestions.classList.add('hidden');
+        }
     });
+    document.getElementById('author-create-form').addEventListener('submit', function() {
+        // nothing needed, hidden inputs are already in place
+    });
+}
+document.addEventListener('DOMContentLoaded', function() {
+    setupAuthorCreateTagSearch();
+});
 </script>
 {% endif %}
