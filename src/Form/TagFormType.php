@@ -14,7 +14,7 @@ class TagFormType extends AbstractType
     {
         $builder
             ->add('name', TextType::class, [
-                'label' => 'Nom du Tag',
+                'label' => 'Ajouter un nouveau tag',
                 'required' => true,
             ]);
     }
