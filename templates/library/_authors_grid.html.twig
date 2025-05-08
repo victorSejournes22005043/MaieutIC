@@ -18,12 +18,12 @@
                         &#9776;
                     </button>
                     <!-- Dropdown menu -->
-                    <div id="crudDropdownMenu{{ author.id }}" class="hidden flex flex-col items-end mt-2 bg-white rounded-lg shadow-lg z-50">
-                        <button onclick="openAuthorEditModal({{ author.id }})" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Modifier</button>
-                        <form method="post" action="{{ path('app_author_delete', {'id': author.id}) }}" onsubmit="return confirm('Voulez-vous vraiment supprimer cet auteur ?');">
+                    <div id="crudDropdownMenu{{ author.id }}" class="hidden flex flex-col items-end mt-2 bg-white rounded overflow-auto shadow-lg z-50">
+                        <button onclick="openAuthorEditModal({{ author.id }})" class="block px-2 py-1 w-full text-gray-700 hover:bg-gray-100">Modifier</button>
+                        <form method="post" action="{{ path('app_author_delete', {'id': author.id}) }}" onsubmit="return confirm('Voulez-vous vraiment supprimer cet auteur ?');" class="w-full">
                             <input type="hidden" name="_token" value="{{ csrf_token('delete_author_' ~ author.id) }}">
                             <button type="submit"
-                                    class="bg-white hover:bg-gray-100 text-red-600 px-2 py-1 rounded transition"
+                                    class="bg-white hover:bg-gray-100 text-red-600 w-full px-2 py-1 transition"
                                     title="Supprimer">
                                 Supprimer
                             </button>
