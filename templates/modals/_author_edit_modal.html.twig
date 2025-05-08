@@ -1,17 +1,44 @@
 {% if app.user and app.user.userType == 1 %}
 <div id="author-edit-modal" class="fixed inset-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-[1000] hidden">
-    <div class="bg-white p-5 rounded-lg w-[90%] max-w-[500px] shadow-lg relative">
+    <div class="bg-white/95 text-gray-700 p-5 rounded-lg w-[90%] max-w-[500px] shadow-lg relative">
         <span class="absolute top-2 right-2 text-2xl cursor-pointer" onclick="closeAuthorEditModal()">&times;</span>
-        <h2 class="text-xl text-gray-700 font-bold mb-4">Modifier un auteur</h2>
+        <h2 class="text-xl font-bold mb-4">Modifier un auteur</h2>
         {{ form_start(form, {'attr': {'id': 'author-edit-form', 'class': 'space-y-4'}, 'action': path('app_author_edit', {'id': 1})}) }}
-            {{ form_label(form.name) }}
-            {{ form_widget(form.name) }}
+            <div class="mb-4">
+                {{ form_label(form.name) }}
+                {{ form_widget(form.name, {'attr': {'class': 'bg-white mt-1 block w-full border border-gray-300 rounded-md p-2', 'multiple': false}}) }}
+                {{ form_errors(form.name, {'attr': {'class': 'text-red-500'}}) }}
+            </div>
 
-            {{ form_row(form.birthYear) }}
-            {{ form_row(form.deathYear) }}
-            {{ form_row(form.nationality) }}
-            {{ form_row(form.link) }}
-            {{ form_row(form.image) }}
+            <div class="mb-4">
+                {{ form_label(form.birthYear) }}
+                {{ form_widget(form.birthYear, {'attr': {'class': 'bg-white mt-1 block w-full border border-gray-300 rounded-md p-2', 'multiple': false}}) }}
+                {{ form_errors(form.birthYear, {'attr': {'class': 'text-red-500'}}) }}
+            </div>
+
+            <div class="mb-4">
+                {{ form_label(form.deathYear) }}
+                {{ form_widget(form.deathYear, {'attr': {'class': 'bg-white mt-1 block w-full border border-gray-300 rounded-md p-2', 'multiple': false}}) }}
+                {{ form_errors(form.deathYear, {'attr': {'class': 'text-red-500'}}) }}
+            </div>
+            
+            <div class="mb-4">
+                {{ form_label(form.nationality) }}
+                {{ form_widget(form.nationality, {'attr': {'class': 'bg-white mt-1 block w-full border border-gray-300 rounded-md p-2', 'multiple': false}}) }}
+                {{ form_errors(form.nationality, {'attr': {'class': 'text-red-500'}}) }}
+            </div>
+
+            <div class="mb-4">
+                {{ form_label(form.link) }}
+                {{ form_widget(form.link, {'attr': {'class': 'bg-white mt-1 block w-full border border-gray-300 rounded-md p-2', 'multiple': false}}) }}
+                {{ form_errors(form.link, {'attr': {'class': 'text-red-500'}}) }}
+            </div>
+
+            <div class="mb-4">
+                {{ form_label(form.image) }}
+                {{ form_widget(form.image, {'attr': {'class': 'bg-white mt-1 block w-full border border-gray-300 rounded-md p-2', 'multiple': false}}) }}
+                {{ form_errors(form.image, {'attr': {'class': 'text-red-500'}}) }}
+            </div>
 
             <div class="mb-4">
                 {{ form_label(form.tags) }}
