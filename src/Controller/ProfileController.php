@@ -152,16 +152,8 @@ final class ProfileController extends AbstractController{
 
         $form->handleRequest($request);
 
-        // dd($form->get('taggableQuestions')->getData());
-
         if ($form->isSubmitted() && $form->isValid()) {
             // Mettre à jour les réponses aux questions
-            // Supprimer toutes les UserQuestions de l'utilisateur
-
-            foreach ($user->getUserQuestions() as $uq) {
-                $user->removeUserQuestion($uq);
-                $entityManager->remove($uq);
-            }
 
             // Réenregistrer les nouvelles réponses
             $questions = $form->get('userQuestions')->getData();
@@ -183,6 +175,14 @@ final class ProfileController extends AbstractController{
                 foreach ($ids as $tagId) {
                     $tag = $tagRepository->find($tagId);
                     if ($tag) {
+                        // Vérifier s'il existe déjà une UserQuestions pour ce user, question, answer
+                        $existing = $userQuestionsRepository->findOneBy([
+                            'user' => $user,
+                            'question' => "Taggable Question $index",
+                            'answer' => $tag->getName()
+                        ]);
+                        if (!$existing) {
+                            dd($tag->getName());
                             $userQuestion = new UserQuestions();
                             $userQuestion->setUser($user);
                             $userQuestion->setQuestion("Taggable Question $index");
@@ -192,7 +192,7 @@ final class ProfileController extends AbstractController{
                         }
                     }
                 }
-            
+            }
 
             $entityManager->flush();
             $this->addFlash('success', 'Profil mis à jour avec succès.');
