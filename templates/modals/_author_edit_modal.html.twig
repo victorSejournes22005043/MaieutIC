@@ -66,143 +66,145 @@ function debounce(fn, delay) {
     };
 }
 
-let authorEditSelectedTags = [];
+if (typeof authorEditSelectedTags === 'undefined') {
+    let authorEditSelectedTags = [];
 
-function setupAuthorEditTagSearch() {
-    const input = document.getElementById('author-edit-tag-search');
-    const suggestions = document.getElementById('author-edit-tag-suggestions');
-    const activeTags = document.getElementById('author-edit-active-tags');
-
-    input.value = '';
-    suggestions.innerHTML = '';
-    suggestions.classList.add('hidden');
-
-    input.oninput = debounce(function() {
-        fetchTags(this.value.trim());
-    }, 200);
-
-    // Affiche les premiers tags quand l'input reçoit le focus
-    input.onfocus = function() {
-        fetchTags('');
-    };
-
-    function fetchTags(query) {
-        fetch('{{ path('app_tag_search') }}?q=' + encodeURIComponent(query))
-            .then(r => r.json())
-            .then(tags => {
-                suggestions.innerHTML = '';
-                tags.forEach(tag => {
-                    if (authorEditSelectedTags.find(t => t.id == tag.id)) return;
-                    const div = document.createElement('div');
-                    div.className = 'px-4 py-2 hover:bg-blue-100 cursor-pointer';
-                    div.textContent = tag.name;
-                    div.onclick = () => {
-                        authorEditSelectedTags.push({id: tag.id, name: tag.name});
-                        renderAuthorEditActiveTags();
-                        suggestions.innerHTML = '';
-                        suggestions.classList.add('hidden');
-                        input.value = '';
-                    };
-                    suggestions.appendChild(div);
-                });
-                if (tags.length > 0) {
-                    suggestions.classList.remove('hidden');
-                } else {
-                    suggestions.classList.add('hidden');
-                }
-            });
-    }
-
-    function renderAuthorEditActiveTags() {
-        activeTags.innerHTML = '';
-        authorEditSelectedTags.forEach(tag => {
-            const span = document.createElement('span');
-            span.className = 'bg-indigo-100 text-indigo-800 text-sm font-medium px-3 py-1 rounded-full flex items-center gap-1';
-            span.innerHTML = `
-                ${tag.name}
-                <button type="button" class="remove-tag text-indigo-600 font-bold hover:text-red-500" data-tag-id="${tag.id}">&times;</button>
-            `;
-            const hidden = document.createElement('input');
-            hidden.type = 'hidden';
-            hidden.name = 'author[tags][]';
-            hidden.value = tag.id;
-            span.appendChild(hidden);
-            span.querySelector('.remove-tag').onclick = () => {
-                authorEditSelectedTags = authorEditSelectedTags.filter(t => t.id != tag.id);
-                renderAuthorEditActiveTags();
-            };
-            activeTags.appendChild(span);
-        });
-    }
-
-    document.addEventListener('click', function(e) {
-        if (!input.contains(e.target) && !suggestions.contains(e.target)) {
-            suggestions.classList.add('hidden');
-        }
-    });
-
-    document.getElementById('author-edit-form').addEventListener('submit', function() {
-        // nothing needed, hidden inputs are already in place
-    });
-}
-
-function openAuthorEditModal(id) {
-    const form = document.getElementById('author-edit-form');
-    const editUrl = `{{ path('app_author_edit', {'id': 'PLACEHOLDER'}) }}`.replace('PLACEHOLDER', id);
-    form.action = editUrl;
-
-    fetch(`/library/author/data/${id}`)
-        .then(response => response.json())
-        .then(data => {
-            form.querySelector('[name$="[name]"]').value = data.name;
-            form.querySelector('[name$="[birthYear]"]').value = data.birthYear;
-            form.querySelector('[name$="[deathYear]"]').value = data.deathYear;
-            form.querySelector('[name$="[nationality]"]').value = data.nationality;
-            form.querySelector('[name$="[link]"]').value = data.link;
-            form.querySelector('[name$="[image]"]').value = data.image;
-
-            authorEditSelectedTags = [];
-            if (data.tags) {
-                data.tags.forEach(tag => {
-                    authorEditSelectedTags.push({id: tag.id, name: tag.name});
-                });
-            }
-
-            setupAuthorEditTagSearch();
-            renderAuthorEditActiveTags();
-            document.getElementById('author-edit-modal').classList.remove('hidden');
-        });
-
-    function renderAuthorEditActiveTags() {
+    function setupAuthorEditTagSearch() {
+        const input = document.getElementById('author-edit-tag-search');
+        const suggestions = document.getElementById('author-edit-tag-suggestions');
         const activeTags = document.getElementById('author-edit-active-tags');
-        activeTags.innerHTML = '';
-        authorEditSelectedTags.forEach(tag => {
-            const span = document.createElement('span');
-            span.className = 'bg-indigo-100 text-indigo-800 text-sm font-medium px-3 py-1 rounded-full flex items-center gap-1';
-            span.innerHTML = `
-                ${tag.name}
-                <button type="button" class="remove-tag text-indigo-600 font-bold hover:text-red-500" data-tag-id="${tag.id}">&times;</button>
-            `;
-            const hidden = document.createElement('input');
-            hidden.type = 'hidden';
-            hidden.name = 'author[tags][]';
-            hidden.value = tag.id;
-            span.appendChild(hidden);
-            span.querySelector('.remove-tag').onclick = () => {
-                authorEditSelectedTags = authorEditSelectedTags.filter(t => t.id != tag.id);
-                renderAuthorEditActiveTags();
-            };
-            activeTags.appendChild(span);
+
+        input.value = '';
+        suggestions.innerHTML = '';
+        suggestions.classList.add('hidden');
+
+        input.oninput = debounce(function() {
+            fetchTags(this.value.trim());
+        }, 200);
+
+        // Affiche les premiers tags quand l'input reçoit le focus
+        input.onfocus = function() {
+            fetchTags('');
+        };
+
+        function fetchTags(query) {
+            fetch('{{ path('app_tag_search') }}?q=' + encodeURIComponent(query))
+                .then(r => r.json())
+                .then(tags => {
+                    suggestions.innerHTML = '';
+                    tags.forEach(tag => {
+                        if (authorEditSelectedTags.find(t => t.id == tag.id)) return;
+                        const div = document.createElement('div');
+                        div.className = 'px-4 py-2 hover:bg-blue-100 cursor-pointer';
+                        div.textContent = tag.name;
+                        div.onclick = () => {
+                            authorEditSelectedTags.push({id: tag.id, name: tag.name});
+                            renderAuthorEditActiveTags();
+                            suggestions.innerHTML = '';
+                            suggestions.classList.add('hidden');
+                            input.value = '';
+                        };
+                        suggestions.appendChild(div);
+                    });
+                    if (tags.length > 0) {
+                        suggestions.classList.remove('hidden');
+                    } else {
+                        suggestions.classList.add('hidden');
+                    }
+                });
+        }
+
+        function renderAuthorEditActiveTags() {
+            activeTags.innerHTML = '';
+            authorEditSelectedTags.forEach(tag => {
+                const span = document.createElement('span');
+                span.className = 'bg-indigo-100 text-indigo-800 text-sm font-medium px-3 py-1 rounded-full flex items-center gap-1';
+                span.innerHTML = `
+                    ${tag.name}
+                    <button type="button" class="remove-tag text-indigo-600 font-bold hover:text-red-500" data-tag-id="${tag.id}">&times;</button>
+                `;
+                const hidden = document.createElement('input');
+                hidden.type = 'hidden';
+                hidden.name = 'author[tags][]';
+                hidden.value = tag.id;
+                span.appendChild(hidden);
+                span.querySelector('.remove-tag').onclick = () => {
+                    authorEditSelectedTags = authorEditSelectedTags.filter(t => t.id != tag.id);
+                    renderAuthorEditActiveTags();
+                };
+                activeTags.appendChild(span);
+            });
+        }
+
+        document.addEventListener('click', function(e) {
+            if (!input.contains(e.target) && !suggestions.contains(e.target)) {
+                suggestions.classList.add('hidden');
+            }
+        });
+
+        document.getElementById('author-edit-form').addEventListener('submit', function() {
+            // nothing needed, hidden inputs are already in place
         });
     }
-}
 
-function closeAuthorEditModal() {
-    document.getElementById('author-edit-modal').classList.add('hidden');
-}
+    function openAuthorEditModal(id) {
+        const form = document.getElementById('author-edit-form');
+        const editUrl = `{{ path('app_author_edit', {'id': 'PLACEHOLDER'}) }}`.replace('PLACEHOLDER', id);
+        form.action = editUrl;
 
-document.addEventListener('DOMContentLoaded', function() {
-    setupAuthorEditTagSearch();
-});
+        fetch(`/library/author/data/${id}`)
+            .then(response => response.json())
+            .then(data => {
+                form.querySelector('[name$="[name]"]').value = data.name;
+                form.querySelector('[name$="[birthYear]"]').value = data.birthYear;
+                form.querySelector('[name$="[deathYear]"]').value = data.deathYear;
+                form.querySelector('[name$="[nationality]"]').value = data.nationality;
+                form.querySelector('[name$="[link]"]').value = data.link;
+                form.querySelector('[name$="[image]"]').value = data.image;
+
+                authorEditSelectedTags = [];
+                if (data.tags) {
+                    data.tags.forEach(tag => {
+                        authorEditSelectedTags.push({id: tag.id, name: tag.name});
+                    });
+                }
+
+                setupAuthorEditTagSearch();
+                renderAuthorEditActiveTags();
+                document.getElementById('author-edit-modal').classList.remove('hidden');
+            });
+
+        function renderAuthorEditActiveTags() {
+            const activeTags = document.getElementById('author-edit-active-tags');
+            activeTags.innerHTML = '';
+            authorEditSelectedTags.forEach(tag => {
+                const span = document.createElement('span');
+                span.className = 'bg-indigo-100 text-indigo-800 text-sm font-medium px-3 py-1 rounded-full flex items-center gap-1';
+                span.innerHTML = `
+                    ${tag.name}
+                    <button type="button" class="remove-tag text-indigo-600 font-bold hover:text-red-500" data-tag-id="${tag.id}">&times;</button>
+                `;
+                const hidden = document.createElement('input');
+                hidden.type = 'hidden';
+                hidden.name = 'author[tags][]';
+                hidden.value = tag.id;
+                span.appendChild(hidden);
+                span.querySelector('.remove-tag').onclick = () => {
+                    authorEditSelectedTags = authorEditSelectedTags.filter(t => t.id != tag.id);
+                    renderAuthorEditActiveTags();
+                };
+                activeTags.appendChild(span);
+            });
+        }
+    }
+
+    function closeAuthorEditModal() {
+        document.getElementById('author-edit-modal').classList.add('hidden');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        setupAuthorEditTagSearch();
+    });
+}
 </script>
 {% endif %}

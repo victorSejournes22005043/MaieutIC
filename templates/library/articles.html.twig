@@ -31,24 +31,27 @@
         </div>
         <tbody>
             {% for article in articles %}
-            <div class="bg-white hover:bg-blue-50 flex flex-row rounded-lg w-full my-1 p-3 items-center">
+            <div class="relative bg-white hover:bg-blue-50 flex flex-row rounded-lg w-full my-1 p-3 items-center">
                 <a href="{{ article.link }}" target="_blank" class="w-1/2">{{ article.title }}</a>
                 <p class="flex-1">{{ article.author }}</p>
                 {% if app.user and app.user.userType == 1 %}
-                    <div class="flex space-x-1">
-                        <button onclick="openArticleEditModal({{ article.id }})"
-                                class="bg-yellow-400 hover:bg-yellow-500 text-white px-2 py-1 rounded text-xs font-semibold transition"
-                                title="Modifier">
-                            ✏️
+                    <div class="absolute top-2 right-2 flex flex-col items-end space-x-1">
+                        {# Dropdown button #}
+                        <button id="crudDropdownButton{{ article.id }}" class="focus:outline-none px-2 py-1">
+                            &#9776;
                         </button>
-                        <form method="post" action="{{ path('app_article_delete', {'id': article.id}) }}" onsubmit="return confirm('Voulez-vous vraiment supprimer cet article ?');">
-                            <input type="hidden" name="_token" value="{{ csrf_token('delete_article_' ~ article.id) }}">
-                            <button type="submit"
-                                    class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs font-semibold transition"
-                                    title="Supprimer">
-                                🗑️
-                            </button>
-                        </form>
+                        {# Dropdown menu #}
+                        <div id="crudDropdownMenu{{ article.id }}" class="hidden flex flex-col items-end mt-2 bg-white rounded overflow-auto shadow-lg z-50">
+                            <button onclick="openArticleEditModal({{ article.id }})" class="block px-2 py-1 w-full text-gray-700 hover:bg-gray-100">Modifier</button>
+                            <form method="post" action="{{ path('app_article_delete', {'id': article.id}) }}" onsubmit="return confirm('Voulez-vous vraiment supprimer cet auteur ?');" class="w-full">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_article_' ~ article.id) }}">
+                                <button type="submit"
+                                        class="bg-white hover:bg-gray-100 text-red-600 w-full px-2 py-1 transition"
+                                        title="Supprimer">
+                                    Supprimer
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 {% endif %}
             </div>
@@ -56,6 +59,41 @@
         </tbody>
     </div>
 </div>
+<script>
+    // JavaScript to toggle the dropdown menu for each article
+    document.addEventListener('DOMContentLoaded', () => {
+        const dropdownButtons = document.querySelectorAll('[id^="crudDropdownButton"]');
+        const dropdownMenus = document.querySelectorAll('[id^="crudDropdownMenu"]');
+
+        dropdownButtons.forEach((button) => {
+            const menuId = button.id.replace('crudDropdownButton', 'crudDropdownMenu');
+            const menu = document.getElementById(menuId);
+
+            if (menu) {
+                button.addEventListener('click', (event) => {
+                    event.stopPropagation();
+
+                    // Close all other menus
+                    dropdownMenus.forEach((otherMenu) => {
+                        if (otherMenu !== menu) {
+                            otherMenu.classList.add('hidden');
+                        }
+                    });
+
+                    // Toggle the clicked menu
+                    menu.classList.toggle('hidden');
+                });
+
+                // Close the dropdown if clicked outside
+                document.addEventListener('click', (event) => {
+                    if (!button.contains(event.target) && !menu.contains(event.target)) {
+                        menu.classList.add('hidden');
+                    }
+                });
+            }
+        });
+    });
+</script>
 
 {% include 'modals/_article_create_modal.html.twig' with {'form': createForm} %}
 {% include 'modals/_article_edit_modal.html.twig' with {'form': editForm} %}

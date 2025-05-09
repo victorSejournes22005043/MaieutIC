@@ -41,96 +41,103 @@
 </div>
 
 <script>
-const tagSearchInput = document.getElementById('tag-search-input');
-const tagSuggestions = document.getElementById('tag-suggestions');
-const activeTags = document.getElementById('active-tags');
-let selectedTags = [];
+console.log('authors index script');
+initializeAuthorDropdowns();
+console.log('Dropdowns initialized');
+if (typeof tagSearchInput === 'undefined') {
+    const tagSearchInput = document.getElementById('tag-search-input');
+    const tagSuggestions = document.getElementById('tag-suggestions');
+    const activeTags = document.getElementById('active-tags');
+    let selectedTags = [];
 
-function debounce(fn, delay) {
-    let timeout;
-    return function(...args) {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => fn.apply(this, args), delay);
-    };
-}
-
-// Recherche AJAX des tags
-tagSearchInput.addEventListener('input', debounce(function() {
-    const query = this.value.trim();
-    if (!query) {
-        tagSuggestions.innerHTML = '';
-        tagSuggestions.classList.add('hidden');
-        return;
+    function debounce(fn, delay) {
+        let timeout;
+        return function(...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => fn.apply(this, args), delay);
+        };
     }
 
-    // Suggestions AJAX
-    fetch('{{ path('app_tag_search') }}?q=' + encodeURIComponent(query))
-        .then(r => r.json())
-        .then(tags => {
+    // Recherche AJAX des tags
+    tagSearchInput.addEventListener('input', debounce(function() {
+        const query = this.value.trim();
+        if (!query) {
             tagSuggestions.innerHTML = '';
-            tags.forEach(tag => {
-                if (selectedTags.find(t => t.id === tag.id)) return;
-                const div = document.createElement('div');
-                div.className = 'px-4 py-2 hover:bg-blue-100 cursor-pointer';
-                div.textContent = tag.name;
-                div.dataset.tagId = tag.id;
-                div.dataset.tagName = tag.name;
-                div.onclick = () => {
-                    addActiveTag(tag.id, tag.name);
-                    tagSuggestions.innerHTML = '';
-                    tagSuggestions.classList.add('hidden');
-                    tagSearchInput.value = '';
-                };
-                tagSuggestions.appendChild(div);
+            tagSuggestions.classList.add('hidden');
+            return;
+        }
+
+        // Suggestions AJAX
+        fetch('{{ path('app_tag_search') }}?q=' + encodeURIComponent(query))
+            .then(r => r.json())
+            .then(tags => {
+                tagSuggestions.innerHTML = '';
+                tags.forEach(tag => {
+                    if (selectedTags.find(t => t.id === tag.id)) return;
+                    const div = document.createElement('div');
+                    div.className = 'px-4 py-2 hover:bg-blue-100 cursor-pointer';
+                    div.textContent = tag.name;
+                    div.dataset.tagId = tag.id;
+                    div.dataset.tagName = tag.name;
+                    div.onclick = () => {
+                        addActiveTag(tag.id, tag.name);
+                        tagSuggestions.innerHTML = '';
+                        tagSuggestions.classList.add('hidden');
+                        tagSearchInput.value = '';
+                    };
+                    tagSuggestions.appendChild(div);
+                });
+                tagSuggestions.classList.toggle('hidden', tags.length === 0);
             });
-            tagSuggestions.classList.toggle('hidden', tags.length === 0);
+    }, 200));
+
+    function addActiveTag(id, name) {
+        if (selectedTags.find(t => t.id == id)) return;
+        selectedTags.push({id, name});
+        renderActiveTags();
+        filterAuthors();
+    }
+
+    function removeActiveTag(id) {
+        selectedTags = selectedTags.filter(t => t.id != id);
+        renderActiveTags();
+        filterAuthors();
+    }
+
+    function renderActiveTags() {
+        activeTags.innerHTML = '';
+        selectedTags.forEach(tag => {
+            const span = document.createElement('span');
+            span.className = 'bg-indigo-100 text-indigo-800 text-sm font-medium px-3 py-1 rounded-full flex items-center gap-1';
+            span.innerHTML = `
+                ${tag.name}
+                <button type="button" class="remove-tag text-indigo-600 font-bold hover:text-red-500" data-tag-id="${tag.id}">&times;</button>
+            `;
+            span.querySelector('.remove-tag').onclick = () => removeActiveTag(tag.id);
+            activeTags.appendChild(span);
         });
-}, 200));
+    }
 
-function addActiveTag(id, name) {
-    if (selectedTags.find(t => t.id == id)) return;
-    selectedTags.push({id, name});
-    renderActiveTags();
-    filterAuthors();
-}
+    function filterAuthors() {
+        const tagIds = selectedTags.map(t => t.id);
+        const params = new URLSearchParams();
+        tagIds.forEach(id => params.append('tags[]', id));
+        fetch('{{ path('app_author_filter') }}?' + params.toString())
+            .then(r => r.text())
+            .then(html => {
+                const authorsGrid = document.getElementById('authors-grid');
+                authorsGrid.innerHTML = html;
+            });
+    }
 
-function removeActiveTag(id) {
-    selectedTags = selectedTags.filter(t => t.id != id);
-    renderActiveTags();
-    filterAuthors();
-}
-
-function renderActiveTags() {
-    activeTags.innerHTML = '';
-    selectedTags.forEach(tag => {
-        const span = document.createElement('span');
-        span.className = 'bg-indigo-100 text-indigo-800 text-sm font-medium px-3 py-1 rounded-full flex items-center gap-1';
-        span.innerHTML = `
-            ${tag.name}
-            <button type="button" class="remove-tag text-indigo-600 font-bold hover:text-red-500" data-tag-id="${tag.id}">&times;</button>
-        `;
-        span.querySelector('.remove-tag').onclick = () => removeActiveTag(tag.id);
-        activeTags.appendChild(span);
+    // Fermer suggestions si clic ailleurs
+    document.addEventListener('click', function(e) {
+        if (!tagSearchInput.contains(e.target) && !tagSuggestions.contains(e.target)) {
+            tagSuggestions.classList.add('hidden');
+        }
     });
 }
 
-function filterAuthors() {
-    const tagIds = selectedTags.map(t => t.id);
-    const params = new URLSearchParams();
-    tagIds.forEach(id => params.append('tags[]', id));
-    fetch('{{ path('app_author_filter') }}?' + params.toString())
-        .then(r => r.text())
-        .then(html => {
-            document.getElementById('authors-grid').innerHTML = html;
-        });
-}
-
-// Fermer suggestions si clic ailleurs
-document.addEventListener('click', function(e) {
-    if (!tagSearchInput.contains(e.target) && !tagSuggestions.contains(e.target)) {
-        tagSuggestions.classList.add('hidden');
-    }
-});
 </script>
 
 <!-- Modals -->

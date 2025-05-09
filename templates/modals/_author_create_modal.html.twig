@@ -65,89 +65,94 @@ function debounce(fn, delay) {
         timeout = setTimeout(() => fn.apply(this, args), delay);
     };
 }
-let authorCreateSelectedTags = [];
-function openAuthorCreateModal() {
-    document.getElementById('author-create-modal').classList.remove('hidden');
-    setupAuthorCreateTagSearch();
-}
-function closeAuthorCreateModal() {
-    document.getElementById('author-create-modal').classList.add('hidden');
-}
-function setupAuthorCreateTagSearch() {
-    const input = document.getElementById('author-create-tag-search');
-    const suggestions = document.getElementById('author-create-tag-suggestions');
-    const activeTags = document.getElementById('author-create-active-tags');
-    authorCreateSelectedTags = [];
-    activeTags.innerHTML = '';
-    input.value = '';
-    suggestions.innerHTML = '';
-    suggestions.classList.add('hidden');
-    input.oninput = debounce(function() {
-        fetchTags(this.value.trim());
-    }, 200);
 
-    input.onfocus = function() {
-        fetchTags('');
-    };
-
-    function fetchTags(query) {
-        fetch('{{ path('app_tag_search') }}?q=' + encodeURIComponent(query))
-            .then(r => r.json())
-            .then(tags => {
-                suggestions.innerHTML = '';
-                tags.forEach(tag => {
-                    if (authorCreateSelectedTags.find(t => t.id == tag.id)) return;
-                    const div = document.createElement('div');
-                    div.className = 'px-4 py-2 hover:bg-blue-100 cursor-pointer';
-                    div.textContent = tag.name;
-                    div.onclick = () => {
-                        authorCreateSelectedTags.push({id: tag.id, name: tag.name});
-                        renderAuthorCreateActiveTags();
-                        suggestions.innerHTML = '';
-                        suggestions.classList.add('hidden');
-                        input.value = '';
-                    };
-                    suggestions.appendChild(div);
-                });
-                if (tags.length > 0) {
-                    suggestions.classList.remove('hidden');
-                } else {
-                    suggestions.classList.add('hidden');
-                }
-            });
+if (typeof authorCreateSelectedTags === 'undefined') {
+    let authorCreateSelectedTags = [];
+    function openAuthorCreateModal() {
+        document.getElementById('author-create-modal').classList.remove('hidden');
+        setupAuthorCreateTagSearch();
     }
-    function renderAuthorCreateActiveTags() {
+    function closeAuthorCreateModal() {
+        document.getElementById('author-create-modal').classList.add('hidden');
+    }
+    function setupAuthorCreateTagSearch() {
+        const input = document.getElementById('author-create-tag-search');
+        const suggestions = document.getElementById('author-create-tag-suggestions');
+        const activeTags = document.getElementById('author-create-active-tags');
+        authorCreateSelectedTags = [];
         activeTags.innerHTML = '';
-        authorCreateSelectedTags.forEach(tag => {
-            const span = document.createElement('span');
-            span.className = 'bg-indigo-100 text-indigo-800 text-sm font-medium px-3 py-1 rounded-full flex items-center gap-1';
-            span.innerHTML = `
-                ${tag.name}
-                <button type="button" class="remove-tag text-indigo-600 font-bold hover:text-red-500" data-tag-id="${tag.id}">&times;</button>
-            `;
-            const hidden = document.createElement('input');
-            hidden.type = 'hidden';
-            hidden.name = 'author[tags][]';
-            hidden.value = tag.id;
-            span.appendChild(hidden);
-            span.querySelector('.remove-tag').onclick = () => {
-                authorCreateSelectedTags = authorCreateSelectedTags.filter(t => t.id != tag.id);
-                renderAuthorCreateActiveTags();
-            };
-            activeTags.appendChild(span);
+        input.value = '';
+        suggestions.innerHTML = '';
+        suggestions.classList.add('hidden');
+        input.oninput = debounce(function() {
+            fetchTags(this.value.trim());
+        }, 200);
+
+        input.onfocus = function() {
+            fetchTags('');
+        };
+
+        function fetchTags(query) {
+            fetch('{{ path('app_tag_search') }}?q=' + encodeURIComponent(query))
+                .then(r => r.json())
+                .then(tags => {
+                    suggestions.innerHTML = '';
+                    tags.forEach(tag => {
+                        if (authorCreateSelectedTags.find(t => t.id == tag.id)) return;
+                        const div = document.createElement('div');
+                        div.className = 'px-4 py-2 hover:bg-blue-100 cursor-pointer';
+                        div.textContent = tag.name;
+                        div.onclick = () => {
+                            authorCreateSelectedTags.push({id: tag.id, name: tag.name});
+                            renderAuthorCreateActiveTags();
+                            suggestions.innerHTML = '';
+                            suggestions.classList.add('hidden');
+                            input.value = '';
+                        };
+                        suggestions.appendChild(div);
+                    });
+                    if (tags.length > 0) {
+                        suggestions.classList.remove('hidden');
+                    } else {
+                        suggestions.classList.add('hidden');
+                    }
+                });
+        }
+        function renderAuthorCreateActiveTags() {
+            activeTags.innerHTML = '';
+            authorCreateSelectedTags.forEach(tag => {
+                const span = document.createElement('span');
+                span.className = 'bg-indigo-100 text-indigo-800 text-sm font-medium px-3 py-1 rounded-full flex items-center gap-1';
+                span.innerHTML = `
+                    ${tag.name}
+                    <button type="button" class="remove-tag text-indigo-600 font-bold hover:text-red-500" data-tag-id="${tag.id}">&times;</button>
+                `;
+                const hidden = document.createElement('input');
+                hidden.type = 'hidden';
+                hidden.name = 'author[tags][]';
+                hidden.value = tag.id;
+                span.appendChild(hidden);
+                span.querySelector('.remove-tag').onclick = () => {
+                    authorCreateSelectedTags = authorCreateSelectedTags.filter(t => t.id != tag.id);
+                    renderAuthorCreateActiveTags();
+                };
+                activeTags.appendChild(span);
+            });
+        }
+        document.addEventListener('click', function(e) {
+            if (!input.contains(e.target) && !suggestions.contains(e.target)) {
+                suggestions.classList.add('hidden');
+            }
+        });
+        document.getElementById('author-create-form').addEventListener('submit', function() {
+            // nothing needed, hidden inputs are already in place
         });
     }
-    document.addEventListener('click', function(e) {
-        if (!input.contains(e.target) && !suggestions.contains(e.target)) {
-            suggestions.classList.add('hidden');
-        }
-    });
-    document.getElementById('author-create-form').addEventListener('submit', function() {
-        // nothing needed, hidden inputs are already in place
+    document.addEventListener('DOMContentLoaded', function() {
+        setupAuthorCreateTagSearch();
     });
 }
-document.addEventListener('DOMContentLoaded', function() {
-    setupAuthorCreateTagSearch();
-});
+
+
 </script>
 {% endif %}
