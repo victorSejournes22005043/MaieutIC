@@ -14,6 +14,8 @@ use App\Form\ProfileEditFormType;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\TagRepository;
 use App\Repository\UserQuestionsRepository;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 final class ProfileController extends AbstractController{
     #[Route('/profile', name: 'app_profile')]
@@ -205,6 +207,51 @@ final class ProfileController extends AbstractController{
             'dynamic_questions' => $dynamicQuestions,
             'taggable_questions' => $taggableQuestions,
         ]);
+    }
+
+    #[Route('/profile/delete', name: 'app_profile_delete', methods: ['POST'])]
+    public function delete(
+        Security $security,
+        Request $request,
+        SessionInterface $session,
+        TokenStorageInterface $tokenStorage
+    ): Response {
+        $user = $security->getUser();
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        if ($this->isCsrfTokenValid('delete-user', $request->request->get('_token'))) {
+            $session->set('user_to_delete_id', $user->getId());
+
+            $tokenStorage->setToken(null);
+            $session->invalidate();
+
+            return $this->redirectToRoute('app_profile_delete_confirm');
+        }
+
+        $this->addFlash('error', 'Token CSRF invalide.');
+        return $this->redirectToRoute('app_home');
+    }
+
+    #[Route('/profile/delete/confirm', name: 'app_profile_delete_confirm')]
+    public function confirmDelete(
+        SessionInterface $session,
+        EntityManagerInterface $entityManager
+    ): Response {
+        $id = $session->get('user_to_delete_id');
+        $session->remove('user_to_delete_id');
+
+        if ($id) {
+            $user = $entityManager->getRepository(User::class)->find($id);
+            if ($user) {
+                $entityManager->remove($user);
+                $entityManager->flush();
+            }
+        }
+
+        $this->addFlash('success', 'Votre compte a été supprimé.');
+        return $this->redirectToRoute('app_home');
     }
 
     private function findTagIdByName($tags, $name)
