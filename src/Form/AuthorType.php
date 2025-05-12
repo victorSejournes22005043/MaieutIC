@@ -6,6 +6,7 @@ use App\Entity\Author;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
@@ -36,9 +37,21 @@ class AuthorType extends AbstractType
                 'label' => "Lien d'une biographie de l'auteur",
                 'required' => true,
             ])
-            ->add('image', TextType::class, [
-                'label' => "Lien d'une image de l'auteur",
+            ->add('imageFile', FileType::class, [
+                'label' => 'Photo de l\'auteur',
+                'mapped' => false,
                 'required' => false,
+                'constraints' => [
+                    new \Symfony\Component\Validator\Constraints\File([
+                        'maxSize' => '2M',
+                        'mimeTypes' => [
+                            'image/jpeg',
+                            'image/png',
+                            'image/webp',
+                        ],
+                        'mimeTypesMessage' => 'Merci d\'uploader une image valide (JPEG, PNG, WEBP)',
+                    ])
+                ],
             ])
             ->add('tags', EntityType::class, [
                 'class' => Tag::class,

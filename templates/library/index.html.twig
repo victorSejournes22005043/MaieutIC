@@ -35,7 +35,7 @@
                 </div>
             {% endif %}
 
-            {{ render(controller('App\\Controller\\LibraryController::filterAuthors', {'authors': authors})) }}
+            {% include 'library/_authors_grid.html.twig' with {'authors': authors} %}
         </div>
     </div>
 </div>

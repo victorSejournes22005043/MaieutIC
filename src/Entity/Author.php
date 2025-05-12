@@ -7,6 +7,8 @@ use App\Entity\User;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use App\Entity\Tag;
+use Symfony\Component\HttpFoundation\File\File;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
 class Author
@@ -37,6 +39,16 @@ class Author
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
+
+    /**
+     * @var File|null
+     */
+    #[Assert\File(
+        maxSize: "2M",
+        mimeTypes: ["image/jpeg", "image/png", "image/webp"],
+        mimeTypesMessage: "Merci d'uploader une image valide (JPEG, PNG, WEBP)"
+    )]
+    private $imageFile;
 
     public function getId(): ?int
     {
@@ -124,6 +136,17 @@ class Author
     {
         $this->user = $user;
 
+        return $this;
+    }
+
+    public function getImageFile(): ?File
+    {
+        return $this->imageFile;
+    }
+
+    public function setImageFile(?File $file): static
+    {
+        $this->imageFile = $file;
         return $this;
     }
 }

@@ -22,6 +22,9 @@ final class ProfileController extends AbstractController{
     public function index(Security $security): Response
     {
         $user = $security->getUser();
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
 
         // Récupérer les réponses aux questions
         $userQuestions = [];

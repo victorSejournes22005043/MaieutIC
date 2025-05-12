@@ -22,6 +22,8 @@ use App\Form\BookType;
 use App\Entity\Article;
 use App\Entity\Book;
 use App\Repository\TagRepository;
+use Symfony\Component\String\Slugger\SluggerInterface;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 final class LibraryController extends AbstractController{
     #[Route('/library', name: 'app_library')]
@@ -41,7 +43,7 @@ final class LibraryController extends AbstractController{
     }
 
     #[Route('/library/author/add', name: 'app_author_add')]
-    public function addAuthor(AuthorRepository $authorRepository, Request $request, EntityManagerInterface $em): Response
+    public function addAuthor(AuthorRepository $authorRepository, Request $request, EntityManagerInterface $em, SluggerInterface $slugger): Response
     {
         $user = $this->getUser();
         if (!$user || $user->getUserType() !== 1) {
@@ -54,6 +56,25 @@ final class LibraryController extends AbstractController{
 
         if ($form->isSubmitted() && $form->isValid()) {
             $author->setUser($user);
+
+            // Gestion de l'upload de l'image de l'auteur
+            $imageFile = $form->get('imageFile')->getData();
+            if ($imageFile) {
+                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = $slugger->slug($originalFilename);
+                $extension = $imageFile->guessExtension() ?: pathinfo($imageFile->getClientOriginalName(), PATHINFO_EXTENSION);
+                $newFilename = $safeFilename.'-'.uniqid().'.'.$extension;
+
+                try {
+                    $imageFile->move(
+                        $this->getParameter('kernel.project_dir').'/public/author_images',
+                        $newFilename
+                    );
+                } catch (FileException $e) {
+                    $this->addFlash('danger', "Erreur lors de l'upload de la photo de l'auteur.");
+                }
+                $author->setImage($newFilename);
+            }
 
             $authorRepository->addAuthor($author);
             // Les tags sont automatiquement gérés par le formulaire
@@ -114,7 +135,8 @@ final class LibraryController extends AbstractController{
         Request $request,
         Author $author,
         EntityManagerInterface $em,
-        TaggableRepository $taggableRepository
+        TaggableRepository $taggableRepository,
+        SluggerInterface $slugger
     ): Response
     {
         $user = $this->getUser();
@@ -130,6 +152,25 @@ final class LibraryController extends AbstractController{
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Gestion de l'upload de l'image de l'auteur
+            $imageFile = $form->get('imageFile')->getData();
+            if ($imageFile) {
+                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = $slugger->slug($originalFilename);
+                $extension = $imageFile->guessExtension() ?: pathinfo($imageFile->getClientOriginalName(), PATHINFO_EXTENSION);
+                $newFilename = $safeFilename.'-'.uniqid().'.'.$extension;
+
+                try {
+                    $imageFile->move(
+                        $this->getParameter('kernel.project_dir').'/public/author_images',
+                        $newFilename
+                    );
+                } catch (FileException $e) {
+                    $this->addFlash('danger', "Erreur lors de l'upload de la photo de l'auteur.");
+                }
+                $author->setImage($newFilename);
+            }
+
             $authorRepository->editAuthor($author);
 
             // --- Gestion des tags ---

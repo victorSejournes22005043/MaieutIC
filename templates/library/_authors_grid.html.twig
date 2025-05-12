@@ -2,7 +2,7 @@
     {% for author in authors %}
         <div class="bg-white hover:bg-blue-50 rounded-lg overflow-hidden relative w-44 h-72 m-4 p-3 author-card" data-author-id="{{ author.id }}">
             <a href="{{ author.link }}" target="_blank">
-                <img src="{{ author.image }}" alt="{{ author.name }}" class="w-full h-40 object-cover rounded-lg">
+                <img src="{% if author.image %}{{ asset('author_images/' ~ author.image) }}{% else %}{{ asset('images/default-author.png') }}{% endif %}" alt="{{ author.name }}" class="w-full h-40 object-cover rounded-lg">
             </a>
             <div class="p-4">
                 <h3 class="text-lg font-semibold text-gray-800">{{ author.name }}</h3>

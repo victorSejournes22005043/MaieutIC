@@ -15,6 +15,7 @@
             <h1 class="mt-6 text-center text-4xl font-black text-gray-900 tracking-tight">MaieutIC</h1>
             <p class="mt-2 text-center text-gray-600">La plateforme facilitant l’échange entre doctorants !</p>
             <ul class="flex flex-wrap justify-center my-5">
+                {% if app.user%}
                 <li>
                     <a href="{{ path('app_profile') }}" class="relative group">
                         <img src="{{ asset('images/bureau.jpg') }}" alt="bureau" class="max-h-64 m-3 rounded-lg shadow-xl shadow-black/40 brightness-50 transition-all duration-200 group-hover:brightness-100"/>
@@ -24,6 +25,7 @@
                         </div>
                     </a>
                 </li>
+                {% endif %}
                 <li>
                     <a href="/forums/General" class="relative group">
                         <img src="{{ asset('images/salon.jpg') }}" alt="salon" class="max-h-64 m-3 rounded-lg shadow-xl shadow-black/40 brightness-50 transition-all duration-200 group-hover:brightness-100"/>
