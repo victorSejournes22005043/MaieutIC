@@ -13,11 +13,13 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\String\Slugger\SluggerInterface;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 class RegistrationController extends AbstractController
 {
     #[Route('/register', name: 'app_register')]
-    public function register(Request $request, UserPasswordHasherInterface $userPasswordHasher, Security $security, EntityManagerInterface $entityManager, TagRepository $tagRepository): Response
+    public function register(Request $request, UserPasswordHasherInterface $userPasswordHasher, Security $security, EntityManagerInterface $entityManager, TagRepository $tagRepository, SluggerInterface $slugger): Response
     {
         $user = new User();
         // Définir les questions dynamiques
@@ -65,6 +67,24 @@ class RegistrationController extends AbstractController
 
             // encode the plain password
             $user->setPassword($userPasswordHasher->hashPassword($user, $plainPassword));
+
+            // Gestion de l'upload de la photo de profil
+            $profileImageFile = $form->get('profileImageFile')->getData();
+            if ($profileImageFile) {
+                $originalFilename = pathinfo($profileImageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = $slugger->slug($originalFilename);
+                $newFilename = $safeFilename.'-'.uniqid().'.'.$profileImageFile->guessExtension();
+
+                try {
+                    $profileImageFile->move(
+                        $this->getParameter('kernel.project_dir').'/assets/profile_images',
+                        $newFilename
+                    );
+                } catch (FileException $e) {
+                    $this->addFlash('danger', "Erreur lors de l'upload de la photo de profil.");
+                }
+                $user->setProfileImage($newFilename);
+            }
 
             $entityManager->persist($user);
 

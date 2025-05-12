@@ -9,6 +9,8 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Symfony\Component\HttpFoundation\File\File;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_ID', fields: ['id'])]
@@ -40,6 +42,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 250, nullable: true)]
     private ?string $researchTopic = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $profileImage = null;
+
+    #[Assert\File(
+        maxSize: "2M",
+        mimeTypes: ["image/jpeg", "image/png", "image/webp"],
+        mimeTypesMessage: "Merci d'uploader une image valide (JPEG, PNG, WEBP)"
+    )]
+    private $profileImageFile;
 
     #[ORM\ManyToMany(targetEntity: Post::class, inversedBy: 'subscribedUsers')]
     #[ORM\JoinTable(name: 'Subscription')]
@@ -234,6 +246,28 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->researchTopic = $researchTopic;
 
+        return $this;
+    }
+
+    public function getProfileImage(): ?string
+    {
+        return $this->profileImage;
+    }
+
+    public function setProfileImage(?string $profileImage): static
+    {
+        $this->profileImage = $profileImage;
+        return $this;
+    }
+
+    public function getProfileImageFile(): ?File
+    {
+        return $this->profileImageFile;
+    }
+
+    public function setProfileImageFile(?File $file): static
+    {
+        $this->profileImageFile = $file;
         return $this;
     }
 

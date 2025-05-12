@@ -7,9 +7,9 @@
 <div class="flex items-center bg-gray-200 p-8 pr-0 rounded-lg shadow-md max-w-3xl mx-auto mt-8">
     <div class="w-36 h-36 rounded-full flex items-center justify-center mr-8 overflow-hidden bg-white border border-gray-300">
         <img
-            src="{{ user.profileImageUrl ?? asset('images/default-profile.png') }}"
+            src="{% if user.profileImage %}{{ asset('profile_images/' ~ user.profileImage) }}{% else %}{{ asset('images/default-profile.png') }}{% endif %}"
             alt="Photo de profil"
-            class="w-36 h-36 object-contain rounded-full"
+            class="w-36 h-36 object-cover rounded-full"
         />
     </div>
     <div class="text-indigo-900">
