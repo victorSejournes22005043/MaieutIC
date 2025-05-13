@@ -99,6 +99,7 @@ final class LibraryController extends AbstractController{
         return $this->render('library/index.html.twig', [
             'libraryController' => 'LibraryController',
             'form' => $form,
+            'authors' => $authors,
         ]);
     }
 

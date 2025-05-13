@@ -57,11 +57,15 @@ class ForumController extends AbstractController
             ]);
         }
 
-        return $this->render('forum/create_post.html.twig', [
-            'forums' => $forums,
+
+        return $this->redirectToRoute('app_forums', [
             'category' => $category,
-            'form' => $form->createView(),
         ]);
+        // return $this->render('forum/create_post.html.twig', [
+        //     'forums' => $forums,
+        //     'category' => $category,
+        //     'form' => $form->createView(),
+        // ]);
     }
 
     #[Route('forums/{category}/{postId}', name: 'app_forums', requirements: ['postId' => '\d+'])]
