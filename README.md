@@ -34,8 +34,15 @@ Ensure you have the following dependencies installed:
    php bin/console doctrine:database:create
    php bin/console doctrine:migrations:migrate
    ```
+6. **Load fixtures**:
 
-6. **Compile CSS**:
+   ```sh
+   php bin/console doctrine:fixtures:load
+   ```
+
+7. **Compile CSS**:
    ```sh
    php bin/console tailwind:build --watch
    ```
+
+
