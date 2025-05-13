@@ -45,6 +45,7 @@ class ForumController extends AbstractController
         $form = $this->createForm(PostFormType::class, $post);
 
         $form->handleRequest($request);
+
         if ($form->isSubmitted() && $form->isValid()) {
             $post = $form->getData();
             $post->setUser($this->getUser());
@@ -57,10 +58,8 @@ class ForumController extends AbstractController
             ]);
         }
 
-        return $this->render('forum/create_post.html.twig', [
-            'forums' => $forums,
+        return $this->redirectToRoute('app_forums', [
             'category' => $category,
-            'form' => $form->createView(),
         ]);
     }
 
