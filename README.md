@@ -24,7 +24,7 @@ Ensure you have the following dependencies installed:
 
 4. **Set up environment variables**:
    ```sh
-   cp .env.example .env
+   cp .env.exemple .env
    ```
    Update the `.env` file with your database credentials.
 
@@ -34,8 +34,15 @@ Ensure you have the following dependencies installed:
    php bin/console doctrine:database:create
    php bin/console doctrine:migrations:migrate
    ```
+6. **Load fixtures**:
 
-6. **Compile CSS**:
+   ```sh
+   php bin/console doctrine:fixtures:load
+   ```
+
+7. **Compile CSS**:
    ```sh
    php bin/console tailwind:build --watch
    ```
+
+
