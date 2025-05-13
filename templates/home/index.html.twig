@@ -17,7 +17,7 @@
             <ul class="flex flex-wrap justify-center my-5">
                 {% if app.user%}
                 <li>
-                    <a href="{{ path('app_profile') }}" class="relative group">
+                    <a href="{{ path('app_profile_show', {'username' : app.user.username}) }}" class="relative group">
                         <img src="{{ asset('images/bureau.jpg') }}" alt="bureau" class="max-h-64 m-3 rounded-lg shadow-xl shadow-black/40 brightness-50 transition-all duration-200 group-hover:brightness-100"/>
                         <div class="absolute bottom-5 left-9 text-white transition-opacity duration-200 group-hover:opacity-0">
                             <div class="text-xl font-bold">Bureau</div>

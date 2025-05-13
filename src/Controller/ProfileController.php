@@ -16,6 +16,7 @@ use App\Repository\TagRepository;
 use App\Repository\UserQuestionsRepository;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use App\Repository\UserRepository;
 
 final class ProfileController extends AbstractController{
     #[Route('/profile', name: 'app_profile')]
@@ -25,7 +26,21 @@ final class ProfileController extends AbstractController{
         if (!$user) {
             return $this->redirectToRoute('app_login');
         }
+        return $this->renderProfile($user);
+    }
 
+    #[Route('/profile/{username}', name: 'app_profile_show')]
+    public function show(string $username, UserRepository $userRepository): Response
+    {
+        $user = $userRepository->findOneBy(['username' => $username]);
+        if (!$user) {
+            throw $this->createNotFoundException('Utilisateur non trouvé');
+        }
+        return $this->renderProfile($user);
+    }
+
+    private function renderProfile($user): Response
+    {
         // Récupérer les réponses aux questions
         $userQuestions = [];
         if ($user) {
