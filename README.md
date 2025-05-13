@@ -24,7 +24,7 @@ Ensure you have the following dependencies installed:
 
 4. **Set up environment variables**:
    ```sh
-   cp .env.example .env
+   cp .env.exemple .env
    ```
    Update the `.env` file with your database credentials.
 
