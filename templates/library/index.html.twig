@@ -9,8 +9,7 @@
 {% block body %}
 <div>
     {{ render(controller('App\\Controller\\NavbarController::navbar')) }}
-
-    <div class="container mx-auto py-6">
+    <div class="flex-1 container mx-auto py-6">
         
         <!-- Navigation Buttons -->
         <div class="flex justify-center space-x-4 mb-6">
@@ -39,6 +38,7 @@
         </div>
     </div>
 </div>
+{{ render(controller('App\\Controller\\FooterController::footer')) }}
 
 <script>
 console.log('authors index script');
@@ -141,6 +141,11 @@ if (typeof tagSearchInput === 'undefined') {
 </script>
 
 <!-- Modals -->
-{% include 'modals/_author_create_modal.html.twig' with {'form': createForm} %}
+
+{% if createFormHasErrors is not defined %}
+    {% set createFormHasErrors = false %}
+{% endif %}
+
+{% include 'modals/_author_create_modal.html.twig' with {'form': createForm, 'formHasErrors': createFormHasErrors} %}
 {% include 'modals/_author_edit_modal.html.twig' with {'form': editForm} %}
 {% endblock %}

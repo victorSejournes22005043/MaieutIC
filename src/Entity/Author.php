@@ -44,7 +44,7 @@ class Author
      * @var File|null
      */
     #[Assert\File(
-        maxSize: "2M",
+        maxSize: "4M",
         mimeTypes: ["image/jpeg", "image/png", "image/webp"],
         mimeTypesMessage: "Merci d'uploader une image valide (JPEG, PNG, WEBP)"
     )]

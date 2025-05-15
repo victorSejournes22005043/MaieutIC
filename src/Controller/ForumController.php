@@ -46,6 +46,12 @@ class ForumController extends AbstractController
 
         $form->handleRequest($request);
 
+        
+        // dd($form->getData());
+        // dd($form->isSubmitted());
+        // dd($form->isValid());
+        dd($form->getErrors(true, false));
+
         if ($form->isSubmitted() && $form->isValid()) {
             $post = $form->getData();
             $post->setUser($this->getUser());
@@ -58,10 +64,6 @@ class ForumController extends AbstractController
             ]);
         }
 
-<<<<<<< HEAD
-
-=======
->>>>>>> b71d51a7028d9b91936342dba2e66ae9c3f70676
         return $this->redirectToRoute('app_forums', [
             'category' => $category,
         ]);

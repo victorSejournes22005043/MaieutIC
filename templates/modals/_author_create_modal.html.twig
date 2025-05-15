@@ -1,5 +1,5 @@
 {% if app.user and app.user.userType == 1 %}
-<div id="author-create-modal" class="fixed inset-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-[1000] hidden">
+<div id="author-create-modal" class="fixed inset-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-[1000] {% if formHasErrors %}block{% else %}hidden{% endif %}">
     <div class="bg-white/95 text-gray-700 p-5 rounded-lg w-[90%] max-w-[500px] shadow-lg relative">
         <span class="absolute top-2 right-2 text-2xl cursor-pointer" onclick="closeAuthorCreateModal()">&times;</span>
         <h2 class="text-xl font-bold mb-4">Ajouter un auteur</h2>
@@ -32,6 +32,12 @@
                 {{ form_label(form.link) }}
                 {{ form_widget(form.link, {'attr': {'class': 'bg-white mt-1 block w-full border border-gray-300 rounded-md p-2', 'multiple': false}}) }}
                 {{ form_errors(form.link, {'attr': {'class': 'text-red-500'}}) }}
+            </div>
+
+            <div class="mb-4">
+                {{ form_label(form.imageFile) }}
+                {{ form_widget(form.imageFile, {'attr': {'class': 'bg-white mt-1 block w-full border border-gray-300 rounded-md p-2', 'multiple': false}}) }}
+                <span class="text-red-500">{{ form_errors(form.imageFile) }}</span>
             </div>
             
             <div class="mb-4">

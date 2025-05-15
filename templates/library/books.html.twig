@@ -9,7 +9,7 @@
 
 {{ render(controller('App\\Controller\\NavbarController::navbar')) }}
 
-<div class="container mx-auto py-6">
+<div class="flex-1 container mx-auto py-6">
     <div class="flex justify-center space-x-4 mb-6">
         <button onclick="window.location.href='{{ path('app_library') }}'" class="bg-white/45 text-gray-700 backdrop-blur-sm shadow-lg flex-grow px-4 py-2 rounded-lg font-medium hover:bg-gray-200/45 focus:outline-none focus:ring-2 focus:ring-gray-400 active:bg-gray-400">Auteurs</button>
         <button onclick="window.location.href='{{ path('app_library_articles') }}'" class="bg-white/45 text-gray-700 backdrop-blur-sm shadow-lg flex-grow px-4 py-2 rounded-lg font-medium hover:bg-gray-200/45 focus:outline-none focus:ring-2 focus:ring-gray-400 active:bg-gray-400">Articles</button>
@@ -51,6 +51,7 @@
         {% endfor %}
     </div>
 </div>
+{{ render(controller('App\\Controller\\FooterController::footer')) }}
 {% include 'modals/_book_create_modal.html.twig' with {'form': createForm} %}
 {% include 'modals/_book_edit_modal.html.twig' with {'form': editForm} %}
 {% endblock %}

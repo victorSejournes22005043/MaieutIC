@@ -9,7 +9,7 @@
 
 {{ render(controller('App\\Controller\\NavbarController::navbar')) }}
 
-<div class="container mx-auto py-6">
+<div class="flex-1 container mx-auto py-6">
     <div class="flex justify-center space-x-4 mb-6">
         <button onclick="window.location.href='{{ path('app_library') }}'" class="bg-white/45 text-gray-700 backdrop-blur-sm shadow-lg flex-grow px-4 py-2 rounded-lg font-medium hover:bg-gray-200/45 focus:outline-none focus:ring-2 focus:ring-gray-400 active:bg-gray-400">Auteurs</button>
         <button class="bg-blue-600 text-white flex-grow px-4 py-2 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 active:bg-blue-900">Articles</button>
@@ -59,6 +59,7 @@
         </tbody>
     </div>
 </div>
+{{ render(controller('App\\Controller\\FooterController::footer')) }}
 <script>    
     const dropdownButtons = document.querySelectorAll('[id^="crudDropdownButton"]');
     const dropdownMenus = document.querySelectorAll('[id^="crudDropdownMenu"]');

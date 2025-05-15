@@ -220,10 +220,30 @@ class AuthorType extends AbstractType
             ->add('birthYear', TextType::class, [
                 'label' => 'Année de naissance',
                 'required' => true,
+                'constraints' => [
+                    new \Symfony\Component\Validator\Constraints\Range([
+                        'max' => date('Y'),
+                        'notInRangeMessage' => 'L\'année de naissance ne peut pas être supérieure à {{ max }}.',
+                    ]),
+                    new \Symfony\Component\Validator\Constraints\Type([
+                        'type' => 'digit', // Vérifie que la valeur est composée uniquement de chiffres
+                        'message' => 'L\'année de naissance doit être un nombre entier.',
+                    ]),
+                ],
             ])
             ->add('deathYear', TextType::class, [
                 'label' => 'Année de décès',
                 'required' => false,
+                'constraints' => [
+                    new \Symfony\Component\Validator\Constraints\Range([
+                        'max' => date('Y'),
+                        'notInRangeMessage' => 'L\'année de décès ne peut pas être supérieure à {{ max }}.',
+                    ]),
+                    new \Symfony\Component\Validator\Constraints\Type([
+                        'type' => 'digit', // Vérifie que la valeur est composée uniquement de chiffres
+                        'message' => 'L\'année de décès doit être un nombre entier.',
+                    ]),
+                ],
             ])
             ->add('nationality', ChoiceType::class, [
                 'label' => "Nationalité",
@@ -244,7 +264,7 @@ class AuthorType extends AbstractType
                 'required' => false,
                 'constraints' => [
                     new \Symfony\Component\Validator\Constraints\File([
-                        'maxSize' => '2M',
+                        'maxSize' => '4M',
                         'mimeTypes' => [
                             'image/jpeg',
                             'image/png',

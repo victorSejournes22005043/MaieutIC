@@ -94,13 +94,22 @@ final class LibraryController extends AbstractController{
 
             return $this->redirectToRoute('app_library');
         }
-
+        
         // Si le formulaire n'est pas valide, on réaffiche la page avec les erreurs
         return $this->render('library/index.html.twig', [
-            'libraryController' => 'LibraryController',
-            'form' => $form,
-            'authors' => $authors,
+            'controller_name' => 'LibraryController',
+            'authors' => $authorRepository->findAllOrderedByName(),
+            'createForm' => $form,
+            'editForm' => $this->createForm(AuthorType::class, new Author()),
+            'createFormHasErrors' => !$form->isValid() && $form->isSubmitted(),
         ]);
+
+        
+        // return $this->render('library/index.html.twig', [
+        //     'libraryController' => 'LibraryController',
+        //     'form' => $form,
+        //     'authors' => $authors,
+        // ]);
     }
 
     #[Route('/library/author/data/{id}', name: 'app_author_data', methods: ['GET'])]
