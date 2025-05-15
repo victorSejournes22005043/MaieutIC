@@ -26,7 +26,7 @@ class PostFormType extends AbstractType
                 ],
             ])
             ->add('description', TextareaType::class, [
-                'label' => 'Description',
+                'label' => 'Contenu',
                 'constraints' => [
                     new NotBlank([
                         'message' => 'Veuillez entrer la description',

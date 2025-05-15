@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Articles{% endblock %}
+{% block title %}Forums{% endblock %}
 {% block stylesheets %}
     <link rel="stylesheet" href="{{ asset('styles/app.css') }}">
 {% endblock %}
@@ -33,7 +33,7 @@
     </div>
 
     {# Forum list or selected post #}
-    <ul class="mt-8 max-w-4xl space-y-6 bg-white/50 backdrop-blur-sm p-8 rounded-xl shadow-xl border border-white/20">
+    <ul class="m-5 max-w-5xl w-full bg-white/50 backdrop-blur-sm p-8 rounded-xl shadow-xl border border-white/20">
         {% if selectedPost %}
             {# Display the selected post #}
             <a href="{{ path('app_forums', { category: category }) }}" class="text-blue-600 m-2 block">← Retour</a>
