@@ -46,12 +46,12 @@ final class LibraryController extends AbstractController{
     public function addAuthor(AuthorRepository $authorRepository, Request $request, EntityManagerInterface $em, SluggerInterface $slugger): Response
     {
         $user = $this->getUser();
-        if (!$user || $user->getUserType() !== 1) {
+        if (!$user) {
             throw $this->createAccessDeniedException();
         }
 
         $author = new Author();
-        $form = $this->createForm(AuthorType::class, $author);
+        $form = $this->create(AuthorType::class, $author);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -150,8 +150,8 @@ final class LibraryController extends AbstractController{
     ): Response
     {
         $user = $this->getUser();
-        if (!$user || $user->getUserType() !== 1) {
-            return $this->redirectToRoute('app_login');
+        if ( !$user || ($user->getUserType() !== 1 && $user->getId() !== $author->getUser()->getId()) ) {
+            throw $this->createAccessDeniedException();
         }
 
         if (!$author) {
@@ -216,7 +216,7 @@ final class LibraryController extends AbstractController{
     public function deleteAuthor(AuthorRepository $authorRepository, Request $request, Author $author): RedirectResponse
     {
         $user = $this->getUser();
-        if (!$user || $user->getUserType() !== 1) {
+        if (!$user || ($user->getUserType() !== 1 && $user->getId() !== $author->getUser()->getId()) ) {
             return $this->redirectToRoute('app_login'); // Ou utilisez throw $this->createAccessDeniedException();
         }
 
@@ -249,7 +249,7 @@ final class LibraryController extends AbstractController{
     public function addArticle(Request $request, EntityManagerInterface $em): Response
     {
         $user = $this->getUser();
-        if (!$user || $user->getUserType() !== 1) {
+        if (!$user) {
             throw $this->createAccessDeniedException();
         }
 
@@ -317,13 +317,13 @@ final class LibraryController extends AbstractController{
         TaggableRepository $taggableRepository
     ): Response
     {
-        $user = $this->getUser();
-        if (!$user || $user->getUserType() !== 1) {
-            return $this->redirectToRoute('app_login');
-        }
-
         if (!$article) {
             throw $this->createNotFoundException('Article non trouvé');
+        }
+
+        $user = $this->getUser();
+        if (!$user || ($user->getUserType() !== 1 && $user->getId() !== $article->getUser()->getId())) {
+            return $this->redirectToRoute('app_login');
         }
 
         $form = $this->createForm(ArticleType::class, $article);
@@ -360,13 +360,13 @@ final class LibraryController extends AbstractController{
     #[Route('/library/article/delete/{id}', name: 'app_article_delete')]
     public function deleteArticle(Request $request, Article $article, EntityManagerInterface $em): RedirectResponse
     {
-        $user = $this->getUser();
-        if (!$user || $user->getUserType() !== 1) {
-            return $this->redirectToRoute('app_login');
-        }
-
         if (!$article) {
             throw $this->createNotFoundException('Article non trouvé');
+        }
+        
+        $user = $this->getUser();
+        if (!$user || ($user->getUserType() !== 1 && $user->getId() !== $article->getUser()->getId())) {
+            return $this->redirectToRoute('app_login');
         }
 
         if ($this->isCsrfTokenValid('delete_article_' . $article->getId(), $request->request->get('_token'))) {
@@ -395,7 +395,7 @@ final class LibraryController extends AbstractController{
     public function addBook(Request $request, EntityManagerInterface $em): Response
     {
         $user = $this->getUser();
-        if (!$user || $user->getUserType() !== 1) {
+        if (!$user) {
             throw $this->createAccessDeniedException();
         }
 
@@ -464,13 +464,13 @@ final class LibraryController extends AbstractController{
         TaggableRepository $taggableRepository
     ): Response
     {
-        $user = $this->getUser();
-        if (!$user || $user->getUserType() !== 1) {
-            return $this->redirectToRoute('app_login');
-        }
-
         if (!$book) {
             throw $this->createNotFoundException('Livre non trouvé');
+        }
+        
+        $user = $this->getUser();
+        if (!$user || ($user->getUserType() !== 1 && $user->getId() !== $book->getUser()->getId())) {
+            return $this->redirectToRoute('app_login');
         }
 
         $form = $this->createForm(BookType::class, $book);
@@ -507,13 +507,13 @@ final class LibraryController extends AbstractController{
     #[Route('/library/book/delete/{id}', name: 'app_book_delete')]
     public function deleteBook(Request $request, Book $book, EntityManagerInterface $em): RedirectResponse
     {
-        $user = $this->getUser();
-        if (!$user || $user->getUserType() !== 1) {
-            return $this->redirectToRoute('app_login');
-        }
-
         if (!$book) {
             throw $this->createNotFoundException('Livre non trouvé');
+        }
+        
+        $user = $this->getUser();
+        if (!$user || ($user->getUserType() !== 1 && $user->getId() !== $book->getUser()->getId())) {
+            return $this->redirectToRoute('app_login');
         }
 
         if ($this->isCsrfTokenValid('delete_book_' . $book->getId(), $request->request->get('_token'))) {

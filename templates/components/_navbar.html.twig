@@ -11,7 +11,7 @@
                 <div class="relative flex items-center">
                     <!-- Display user information if user is logged in -->
                     <button id="profileDropdownButton" class="focus:outline-none">
-                        <img src="{{ app.user.profilePictureUrl|default(asset('images/default-profile.png')) }}" alt="Profil" class="w-10 h-10 rounded-full">
+                        <img src="{% if app.user.profileImage %}{{ asset('profile_images/' ~ app.user.profileImage) }}{% else %}{{ asset('images/default-profile.png') }}{% endif %}" alt="Profil" class="w-10 h-10 rounded-full">
                     </button>
                     <!-- Dropdown menu -->
                     <div id="profileDropdownMenu" class="hidden absolute top-full mt-2 w-48 bg-white rounded-lg shadow-lg z-50">
