@@ -1,20 +1,74 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello MapsController!{% endblock %}
+{% block title %}Bienvenue sur la map des utilisateurs !{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
+{{ render(controller('App\\Controller\\NavbarController::navbar')) }}
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
-
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>D:/Users/User/Documents/Etudes/BUT info/3eme année/stage/MaieutIC/src/Controller/MapsController.php</code></li>
-        <li>Your template at <code>D:/Users/User/Documents/Etudes/BUT info/3eme année/stage/MaieutIC/templates/maps/index.html.twig</code></li>
-    </ul>
+<div class="w-screen h-[80vh] relative overflow-hidden flex items-center justify-center" id="bubble-container">
+    {% for user in users %}
+        <div class="bubble absolute shadow-lg bg-white rounded-full flex items-center justify-center cursor-grab transition-shadow duration-200 group" data-id="{{ user.id }}" style="width:80px;height:80px;">
+            <img src="{% if user.profileImage %}{{ asset('profile_images/' ~ user.profileImage) }}{% else %}{{ asset('images/default-profile.png') }}{% endif %}" alt="profile" class="w-full h-full object-cover rounded-full pointer-events-none" />
+            <div class="bubble-label hidden group-hover:block absolute left-1/2 -translate-x-1/2 -bottom-8 bg-black/80 text-white px-3 py-1 rounded-xl text-sm whitespace-nowrap z-10 pointer-events-none">
+                {{ user.firstName }} {{ user.lastName }}
+            </div>
+        </div>
+    {% endfor %}
 </div>
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
+// --- D3 force layout with center attraction and inertial drag ---
+const width = document.getElementById('bubble-container').offsetWidth;
+const height = document.getElementById('bubble-container').offsetHeight;
+
+const nodes = Array.from(document.querySelectorAll('.bubble')).map((el, i) => ({
+    id: el.dataset.id,
+    el: el,
+    x: width / 2 + 100 * Math.cos(2 * Math.PI * i / {{ users|length }}),
+    y: height / 2 + 100 * Math.sin(2 * Math.PI * i / {{ users|length }}),
+}));
+
+const simulation = d3.forceSimulation(nodes)
+    .alpha(1)
+    .alphaDecay(0.01)
+    .velocityDecay(0.15)
+    .force("x", d3.forceX(width / 2).strength(0.1))
+    .force("y", d3.forceY(height / 2).strength(0.1))
+    .force("charge", d3.forceManyBody().strength(5))
+    .force("collision", d3.forceCollide().radius(45))
+    .on("tick", () => {
+        nodes.forEach(node => {
+            node.el.style.left = (node.x - 40) + "px";
+            node.el.style.top = (node.y - 40) + "px";
+        });
+    });
+
+
+// Drag avec inertie
+function drag(simulation) {
+    return d3.drag()
+        .on("start", (event, d) => {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.vx = 0; d.vy = 0; // Réinitialiser la vitesse
+            d.el.style.zIndex = 1000;
+        })
+        .on("drag", (event, d) => {
+            // Calculer la vitesse du mouvement
+            d.vx = event.dx;
+            d.vy = event.dy;
+            d.x = event.x;
+            d.y = event.y;
+        })
+        .on("end", (event, d) => {
+            if (!event.active) simulation.alphaTarget(0);
+            d.el.style.zIndex = '';
+            // vx et vy conservent l'inertie => D3 continue le mouvement naturellement
+        });
+}
+
+d3.selectAll('.bubble').data(nodes).call(drag(simulation));
+</script>
+
+
 {% endblock %}
