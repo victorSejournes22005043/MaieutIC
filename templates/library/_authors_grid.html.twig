@@ -1,4 +1,4 @@
-<div id="authors-grid" class="flex flex-wrap">
+<div id="authors-grid" class="flex flex-wrap justify-center">
     {% for author in authors %}
         <div class="bg-white hover:bg-blue-50 rounded-lg overflow-hidden relative w-44 h-72 m-4 p-3 author-card" data-author-id="{{ author.id }}">
             <a href="{{ author.link }}" target="_blank">
@@ -12,7 +12,8 @@
                 <img src="{{ asset('images/flags/' ~ author.nationality ~ '.png') }}" alt="{{ author.nationality }}" class="w-8 h-7">
             </div>
 
-            {% if app.user and app.user.userType == 1 %}
+            {# Displays the edit and delete buttons if you are the author or an admin #}
+            {% if app.user and (author.user == app.user or app.user.userType == 1) %}
                 <div class="absolute top-2 right-2 flex flex-col items-end space-x-1">
                     {# Dropdown button #}
                     <button id="crudDropdownButton{{ author.id }}" class="focus:outline-none bg-white rounded-md px-2 py-1">

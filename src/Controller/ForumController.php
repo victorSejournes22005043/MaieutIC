@@ -50,7 +50,7 @@ class ForumController extends AbstractController
         // dd($form->getData());
         // dd($form->isSubmitted());
         // dd($form->isValid());
-        dd($form->getErrors(true, false));
+        // dd($form->getErrors(true, false));
 
         if ($form->isSubmitted() && $form->isValid()) {
             $post = $form->getData();

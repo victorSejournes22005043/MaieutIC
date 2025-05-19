@@ -46,12 +46,12 @@ final class LibraryController extends AbstractController{
     public function addAuthor(AuthorRepository $authorRepository, Request $request, EntityManagerInterface $em, SluggerInterface $slugger): Response
     {
         $user = $this->getUser();
-        if (!$user || $user->getUserType() !== 1) {
+        if (!$user) {
             throw $this->createAccessDeniedException();
         }
 
         $author = new Author();
-        $form = $this->createForm(AuthorType::class, $author);
+        $form = $this->create(AuthorType::class, $author);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -150,8 +150,8 @@ final class LibraryController extends AbstractController{
     ): Response
     {
         $user = $this->getUser();
-        if (!$user || $user->getUserType() !== 1) {
-            return $this->redirectToRoute('app_login');
+        if ( !$user || ($user->getUserType() !== 1 && $user->getId() !== $author->getUser()->getId()) ) {
+            throw $this->createAccessDeniedException();
         }
 
         if (!$author) {
@@ -216,7 +216,7 @@ final class LibraryController extends AbstractController{
     public function deleteAuthor(AuthorRepository $authorRepository, Request $request, Author $author): RedirectResponse
     {
         $user = $this->getUser();
-        if (!$user || $user->getUserType() !== 1) {
+        if (!$user || ($user->getUserType() !== 1 && $user->getId() !== $author->getUser()->getId()) ) {
             return $this->redirectToRoute('app_login'); // Ou utilisez throw $this->createAccessDeniedException();
         }
 
