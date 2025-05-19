@@ -33,6 +33,28 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->getEntityManager()->flush();
     }
 
+    /**
+     * Retourne les utilisateurs ayant au moins un des tags sélectionnés sur la première question taggable.
+     * @param array $tagNames
+     * @return User[]
+     */
+    public function findByTaggableQuestion1Tags(array $tagNames): array
+    {
+        if (empty($tagNames)) {
+            return $this->findAll();
+        }
+        $qb = $this->createQueryBuilder('u')
+            ->join('u.userQuestions', 'uq')
+            ->where('uq.question = :question')
+            ->andWhere('uq.answer IN (:tagNames)')
+            ->setParameter('question', 'Taggable Question 0')
+            ->setParameter('tagNames', $tagNames)
+            ->groupBy('u.id')
+            ->having('COUNT(DISTINCT uq.answer) = :nbTags')
+            ->setParameter('nbTags', count($tagNames));
+        return $qb->getQuery()->getResult();
+    }
+
     //    /**
     //     * @return User[] Returns an array of User objects
     //     */
