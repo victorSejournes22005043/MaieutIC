@@ -12,6 +12,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use App\Entity\Tag;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 
 class AuthorType extends AbstractType
 {
@@ -217,7 +218,7 @@ class AuthorType extends AbstractType
                 'label' => 'Nom',
                 'required' => true,
             ])
-            ->add('birthYear', TextType::class, [
+            ->add('birthYear', IntegerType::class, [
                 'label' => 'Année de naissance',
                 'required' => true,
                 'constraints' => [
@@ -225,23 +226,15 @@ class AuthorType extends AbstractType
                         'max' => date('Y'),
                         'notInRangeMessage' => 'L\'année de naissance ne peut pas être supérieure à {{ max }}.',
                     ]),
-                    new \Symfony\Component\Validator\Constraints\Type([
-                        'type' => 'digit', // Vérifie que la valeur est composée uniquement de chiffres
-                        'message' => 'L\'année de naissance doit être un nombre entier.',
-                    ]),
                 ],
             ])
-            ->add('deathYear', TextType::class, [
+            ->add('deathYear', IntegerType::class, [
                 'label' => 'Année de décès',
                 'required' => false,
                 'constraints' => [
                     new \Symfony\Component\Validator\Constraints\Range([
                         'max' => date('Y'),
                         'notInRangeMessage' => 'L\'année de décès ne peut pas être supérieure à {{ max }}.',
-                    ]),
-                    new \Symfony\Component\Validator\Constraints\Type([
-                        'type' => 'digit', // Vérifie que la valeur est composée uniquement de chiffres
-                        'message' => 'L\'année de décès doit être un nombre entier.',
                     ]),
                 ],
             ])

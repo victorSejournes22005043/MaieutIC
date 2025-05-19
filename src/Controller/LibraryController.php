@@ -51,7 +51,7 @@ final class LibraryController extends AbstractController{
         }
 
         $author = new Author();
-        $form = $this->create(AuthorType::class, $author);
+        $form = $this->createForm(AuthorType::class, $author);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
