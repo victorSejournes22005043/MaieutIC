@@ -27,6 +27,7 @@
     const chatMessages = document.getElementById('chat-messages');
     const chatForm = document.getElementById('chat-form');
     const messageInput = document.getElementById('message');
+    let sending = false;
 
     // Function to fetch messages
     async function fetchMessages() {
@@ -44,10 +45,15 @@
     // Function to send a message
     chatForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        if (sending) return;
+        sending = true;
+        chatForm.querySelector('button[type="submit"]').disabled = true;
         const message = messageInput.value.trim();
 
         if (!message) {
             alert('Message cannot be empty');
+            sending = false;
+            chatForm.querySelector('button[type="submit"]').disabled = false;
             return;
         }
 
@@ -62,6 +68,8 @@
                 const errorData = await response.json();
                 console.error('Error sending message:', errorData);
                 alert(errorData.error || 'Failed to send message');
+                sending = false;
+                chatForm.querySelector('button[type="submit"]').disabled = false;
                 return;
             }
 
@@ -71,6 +79,8 @@
             console.error('Error sending message:', error);
             alert('An error occurred while sending the message');
         }
+        sending = false;
+        chatForm.querySelector('button[type="submit"]').disabled = false;
     });
 
     // Fetch messages every 2 seconds

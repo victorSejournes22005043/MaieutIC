@@ -2,8 +2,8 @@
 
 namespace App\Controller;
 
-use App\Entity\Chat;
-use App\Repository\ChatRepository;
+use App\Entity\Message;
+use App\Repository\MessageRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -21,14 +21,13 @@ final class ChatController extends AbstractController{
     }
 
     #[Route('/chat/messages', name: 'chat_messages', methods: ['GET'])]
-    public function getMessages(ChatRepository $chatRepository): JsonResponse
+    public function getMessages(MessageRepository $messageRepository): JsonResponse
     {
-        $messages = $chatRepository->findBy([], ['creationDate' => 'ASC']);
-        $data = array_map(fn(Chat $chat) => [
-            'user' => $chat->getUser()->getUsername(),
-            'text' => $chat->getText(),
+        $messages = $messageRepository->findBy(['conversation' => null], ['sentAt' => 'ASC']);
+        $data = array_map(fn(Message $msg) => [
+            'user' => $msg->getSender()->getUsername(),
+            'text' => $msg->getContent(),
         ], $messages);
-
         return new JsonResponse($data);
     }
 
@@ -36,28 +35,21 @@ final class ChatController extends AbstractController{
     public function sendMessage(Request $request, EntityManagerInterface $em): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
-
-        // Validate the data
         if (!isset($data['text']) || empty(trim($data['text']))) {
             return new JsonResponse(['error' => 'Message text is required'], Response::HTTP_BAD_REQUEST);
         }
-
-        // Validate the user
         $user = $this->getUser();
         if (!$user) {
             return new JsonResponse(['error' => 'User not authenticated'], Response::HTTP_UNAUTHORIZED);
         }
-
-        // Create and save the message
         try {
-            $message = new Chat();
-            $message->setText($data['text']);
-            $message->setUser($user);
-            $message->setCreationDate(new \DateTime());
-
+            $message = new Message();
+            $message->setContent($data['text']);
+            $message->setSender($user);
+            $message->setSentAt(new \DateTime());
+            $message->setConversation(null); // Chat général
             $em->persist($message);
             $em->flush();
-
             return new JsonResponse(['status' => 'Message sent']);
         } catch (\Exception $e) {
             return new JsonResponse(['error' => 'An error occurred: ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
