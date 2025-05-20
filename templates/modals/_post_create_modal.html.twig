@@ -10,19 +10,19 @@
             <div class="mb-4">
                 {{ form_label(form.name) }}
                 {{ form_widget(form.name, {'attr': {'class': 'bg-white mt-1 block w-full border border-gray-300 rounded-md p-2', 'multiple': false}}) }}
-                {{ form_errors(form.name, {'attr': {'class': 'text-red-500'}}) }}
+                <span class="text-red-500">{{ form_errors(form.name) }}</span>
             </div>
 
             <div class="mb-4">
                 {{ form_label(form.description) }}
                 {{ form_widget(form.description, {'attr': {'class': 'bg-white mt-1 block w-full border border-gray-300 rounded-md p-2', 'multiple': false}}) }}
-                {{ form_errors(form.description, {'attr': {'class': 'text-red-500'}}) }}
+                <span class="text-red-500">{{ form_errors(form.description) }}</span>
             </div>
 
             <div class="mb-4">
                 {{ form_label(form.forum) }}
                 {{ form_widget(form.forum, {'attr': {'class': 'bg-white mt-1 block w-full border border-gray-300 rounded-md p-2', 'multiple': false}}) }}
-                {{ form_errors(form.forum, {'attr': {'class': 'text-red-500'}}) }}
+                <span class="text-red-500">{{ form_errors(form.forum) }}</span>
             </div>
 
             <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Publier</button>
