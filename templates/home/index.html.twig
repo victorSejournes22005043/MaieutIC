@@ -106,6 +106,7 @@
                         </div>
                     </a>
                 </li>
+                {% if app.user and app.user.usertype == 1 %}
                 <li>
                     <a href="{{ path('private_messages') }}" class="relative group">
                         <img src="{{ asset('images/discussion.jpg') }}" alt="discussion" class="max-h-64 m-3 rounded-lg shadow-xl shadow-black/40 brightness-50 transition-all duration-200 group-hover:brightness-100"/>
@@ -115,6 +116,7 @@
                         </div>
                     </a>
                 </li>
+                {% endif %}
                 {% if app.user and app.user.usertype == 1 %}
                 <li>
                     <a href="{{ path('app_admin_interface') }}" class="relative group">
