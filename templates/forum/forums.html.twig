@@ -37,21 +37,30 @@
         {% if selectedPost %}
             {# Display the selected post #}
             <a href="{{ path('app_forums', { category: category }) }}" class="text-blue-600 m-2 block">← Retour</a>
-            <div class="bg-white p-5 rounded-lg">
+            <div class="bg-white relative p-5 rounded-lg">
                 <h2 class="text-2xl font-semibold text-gray-700">{{ selectedPost.name }}</h2>
                 <p class="text-gray-500">Par {{ selectedPost.user.firstName }} {{ selectedPost.user.lastName }}</p>
                 <div class="mt-5">
                     <p class="text-gray-700">{{ selectedPost.description }}</p>
                 </div>
                 {% if app.user and (app.user.id == selectedPost.user.id or app.user.userType == 1) %}
-                    <div class="mt-4 flex gap-2">
-                        {% if app.user.id == selectedPost.user.id %}
-                            <button type="button" class="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded" onclick="openPostEditModal({{ selectedPost.id }})">Modifier</button>
-                        {% endif %}
-                        <form action="{{ path('app_post_delete', { category: category, postId: selectedPost.id }) }}" method="post" style="display:inline;">
-                            <input type="hidden" name="_token" value="{{ csrf_token('delete_post_' ~ selectedPost.id) }}">
-                            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded" onclick="return confirm('Supprimer ce post ?')">Supprimer</button>
-                        </form>
+                    <div class="absolute top-2 right-2 flex flex-col items-end space-x-1">
+                        {# Dropdown button #}
+                        <button id="crudDropdownButton{{ selectedPost.id }}" class="focus:outline-none px-2 py-1">
+                            &#9776;
+                        </button>
+                        {# Dropdown menu #}
+                        <div id="crudDropdownMenu{{ selectedPost.id }}" class="hidden flex flex-col items-end mt-2 bg-white rounded overflow-auto shadow-lg z-50">
+                            <button onclick="openPostEditModal({{ selectedPost.id }})" class="block px-2 py-1 w-full text-gray-700 hover:bg-gray-100">Modifier</button>
+                            <form method="post" action="{{ path('app_post_delete', {'category': category, 'postId': selectedPost.id}) }}" onsubmit="return confirm('Voulez-vous vraiment supprimer cet auteur ?');" class="w-full">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_post_' ~ selectedPost.id) }}">
+                                <button type="submit"
+                                        class="bg-white hover:bg-gray-100 text-red-600 w-full px-2 py-1 transition"
+                                        title="Supprimer">
+                                    Supprimer
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 {% endif %}
             </div>
@@ -129,6 +138,39 @@
 {{ render(controller('App\\Controller\\FooterController::footer')) }}
 
 <script>
+    (function() {
+        const dropdownButtons = document.querySelectorAll('[id^="crudDropdownButton"]');
+        const dropdownMenus = document.querySelectorAll('[id^="crudDropdownMenu"]');
+
+        dropdownButtons.forEach((button) => {
+            const menuId = button.id.replace('crudDropdownButton', 'crudDropdownMenu');
+            const menu = document.getElementById(menuId);
+
+            if (menu) {
+                button.addEventListener('click', (event) => {
+                    event.stopPropagation();
+
+                    // Close all other menus
+                    dropdownMenus.forEach((otherMenu) => {
+                        if (otherMenu !== menu) {
+                            otherMenu.classList.add('hidden');
+                        }
+                    });
+
+                    // Toggle the clicked menu
+                    menu.classList.toggle('hidden');
+                });
+
+                // Close the dropdown if clicked outside
+                document.addEventListener('click', (event) => {
+                    if (!button.contains(event.target) && !menu.contains(event.target)) {
+                        menu.classList.add('hidden');
+                    }
+                });
+            }
+        });
+    })();
+
     function likeComment(id, like) {
         fetch(`/like/${id}`, {
             method: 'POST',
