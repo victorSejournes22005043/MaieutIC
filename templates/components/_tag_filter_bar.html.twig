@@ -81,7 +81,6 @@ if (typeof tagSearchInput === 'undefined') {
     }
 
     function filterByTags() {
-        // Pour la map utilisateur, on envoie les noms des tags
         {% set context = tag_filter_context|default('author') %}
         {% if context == 'user_map' %}
         const tagNames = selectedTags.map(t => t.name);
@@ -91,8 +90,56 @@ if (typeof tagSearchInput === 'undefined') {
             .then(r => r.text())
             .then(html => {
                 const bubbleContainer = document.getElementById('bubble-container');
-                bubbleContainer.innerHTML = html;
-                if (window.renderUserBubbles) window.renderUserBubbles();
+                const temp = document.createElement('div');
+                temp.innerHTML = html;
+                const newBubbles = Array.from(temp.querySelectorAll('.bubble'));
+                const newIds = newBubbles.map(b => b.dataset.id);
+
+                // 1. Ajoute les nouvelles bulles en invisible si elles n'existent pas déjà
+                let addedBubbles = [];
+                newBubbles.forEach(newBubble => {
+                    if (!bubbleContainer.querySelector(`.bubble[data-id="${newBubble.dataset.id}"]`)) {
+                        newBubble.classList.add('transition', 'duration-300', 'opacity-0', 'scale-90');
+                        bubbleContainer.appendChild(newBubble);
+                        addedBubbles.push(newBubble);
+                    }
+                });
+
+                // 2. Réordonne les bulles pour garder le même ordre que la réponse
+                newIds.forEach((id) => {
+                    const el = bubbleContainer.querySelector(`.bubble[data-id="${id}"]`);
+                    if (el) bubbleContainer.appendChild(el);
+                });
+
+                // 3. Anime la disparition des anciennes bulles qui ne sont plus présentes
+                const currentBubbles = Array.from(bubbleContainer.querySelectorAll('.bubble'));
+                let removing = 0;
+                currentBubbles.forEach(bubble => {
+                    if (!newIds.includes(bubble.dataset.id)) {
+                        removing++;
+                        bubble.classList.add('transition', 'duration-300', 'opacity-0', 'scale-90');
+                        setTimeout(() => {
+                            bubble.remove();
+                            removing--;
+                            // Quand toutes les suppressions sont faites, relancer D3
+                            if (removing === 0) {
+                                if (window.renderUserBubbles) window.renderUserBubbles();
+                            }
+                        }, 300);
+                    }
+                });
+
+                // 4. Anime l'apparition des nouvelles bulles
+                setTimeout(() => {
+                    addedBubbles.forEach(bubble => {
+                        bubble.classList.remove('opacity-0', 'scale-90');
+                    });
+                }, 20);
+
+                // Si aucune suppression, relancer D3 tout de suite
+                if (removing === 0) {
+                    if (window.renderUserBubbles) window.renderUserBubbles();
+                }
             });
         {% else %}
         const tagIds = selectedTags.map(t => t.id);
