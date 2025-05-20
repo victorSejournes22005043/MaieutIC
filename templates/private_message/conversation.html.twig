@@ -31,7 +31,11 @@
 {% block javascripts %}
 {{ parent() }}
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+(function() {
+    let pollingStarted = false;
+    function startPrivateMessagePolling() {
+        if (pollingStarted) return;
+        pollingStarted = true;
         const messagesContainer = document.querySelector('.bg-white.rounded-lg.shadow.p-4.mb-6');
         const form = document.querySelector('form[action*="/send"]');
         const input = form ? form.querySelector('input[name="content"]') : null;
@@ -46,6 +50,9 @@
                         if (scroll || lastHtml === '') messagesContainer.scrollTop = messagesContainer.scrollHeight;
                         lastHtml = html;
                     }
+                })
+                .catch(() => {
+                    if (messagesContainer) messagesContainer.innerHTML = '<div class="text-red-500">Erreur de chargement des messages.</div>';
                 });
         }
         setInterval(() => { fetchMessages(); }, 2000);
@@ -60,9 +67,15 @@
                     method: 'POST',
                     body: data
                 })
-                .then(() => {
+                .then(resp => {
+                    if (!resp.ok) throw new Error('Erreur lors de l\'envoi');
                     fetchMessages(true);
                     input.value = '';
+                })
+                .catch(() => {
+                    alert('Erreur lors de l\'envoi du message');
+                })
+                .finally(() => {
                     sending = false;
                     form.querySelector('button[type="submit"]').disabled = false;
                 });
@@ -72,6 +85,12 @@
         if (messagesContainer) messagesContainer.scrollTop = messagesContainer.scrollHeight;
         // Premier fetch immédiat
         fetchMessages(true);
-    });
+    }
+    if (window.Turbo) {
+        document.addEventListener('turbo:load', startPrivateMessagePolling);
+    } else {
+        document.addEventListener('DOMContentLoaded', startPrivateMessagePolling);
+    }
+})();
 </script>
 {% endblock %}
