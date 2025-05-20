@@ -1,5 +1,5 @@
 {% for user in users %}
-    <div class="bubble absolute shadow-lg bg-white rounded-full flex items-center justify-center cursor-grab transition-shadow duration-200 group" data-id="{{ user.id }}" style="width:80px;height:80px;">
+    <div class="bubble absolute shadow-lg bg-white rounded-full flex items-center justify-center cursor-grab transition duration-300 opacity-100 scale-100 group" data-id="{{ user.id }}" style="width:80px;height:80px;">
         <img src="{% if user.profileImage %}{{ asset('profile_images/' ~ user.profileImage) }}{% else %}{{ asset('images/default-profile.png') }}{% endif %}" alt="profile" class="w-full h-full object-cover rounded-full pointer-events-none" />
         <div class="bubble-label hidden group-hover:block absolute left-1/2 -translate-x-1/2 -bottom-8 bg-black/80 text-white px-3 py-1 rounded-xl text-sm whitespace-nowrap z-10 pointer-events-none">
             {{ user.firstName }} {{ user.lastName }}
