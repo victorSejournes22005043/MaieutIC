@@ -1,12 +1,27 @@
 {% if app.user %}
 <div id="article-create-modal" class="fixed inset-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-[1000] hidden">
-    <div class="bg-white p-5 rounded-lg w-[90%] max-w-[500px] shadow-lg relative">
+    <div class="bg-white/95 p-5 rounded-lg w-[90%] max-w-[500px] shadow-lg relative">
         <span class="absolute top-2 right-2 text-2xl cursor-pointer" onclick="closeArticleCreateModal()">&times;</span>
         <h2 class="text-xl font-bold mb-4">Ajouter un article</h2>
         {{ form_start(form, {'attr': {'id': 'article-create-form', 'class': 'space-y-4'}, 'action': path('app_article_add')}) }}
-            {{ form_row(form.title) }}
-            {{ form_row(form.author) }}
-            {{ form_row(form.link) }}
+            <div class="mb-4">
+                {{ form_label(form.title) }}
+                {{ form_widget(form.title, {'attr': {'class': 'bg-white mt-1 block w-full border border-gray-300 rounded-md p-2', 'multiple': false}}) }}
+                <span class="text-red-500">{{ form_errors(form.title) }}</span>
+            </div>
+
+            <div class="mb-4">
+                {{ form_label(form.author) }}
+                {{ form_widget(form.author, {'attr': {'class': 'bg-white mt-1 block w-full border border-gray-300 rounded-md p-2', 'multiple': false}}) }}
+                <span class="text-red-500">{{ form_errors(form.author) }}</span>
+            </div>
+
+            <div class="mb-4">
+                {{ form_label(form.link) }}
+                {{ form_widget(form.link, {'attr': {'class': 'bg-white mt-1 block w-full border border-gray-300 rounded-md p-2', 'multiple': false}}) }}
+                <span class="text-red-500">{{ form_errors(form.link) }}</span>
+            </div>
+
             <div class="mb-4">
                 {{ form_label(form.tags) }}
                 <div class="relative w-full">
@@ -17,7 +32,7 @@
                 <div style="display: none;"> // to hide the original tags field
                     {{ form_widget(form.tags) }}
                 </div>
-                {{ form_errors(form.tags) }}
+                <span class="text-red-500">{{ form_errors(form.tags) }}</span>
             </div>
             <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Ajouter</button>
         {{ form_end(form) }}

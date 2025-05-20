@@ -7,31 +7,31 @@
             <div class="mb-4">
                 {{ form_label(form.name) }}
                 {{ form_widget(form.name, {'attr': {'class': 'bg-white mt-1 block w-full border border-gray-300 rounded-md p-2', 'multiple': false}}) }}
-                {{ form_errors(form.name, {'attr': {'class': 'text-red-500'}}) }}
+                <span class="text-red-500">{{ form_errors(form.name) }}</span>
             </div>
 
             <div class="mb-4">
                 {{ form_label(form.birthYear) }}
                 {{ form_widget(form.birthYear, {'attr': {'class': 'bg-white mt-1 block w-full border border-gray-300 rounded-md p-2', 'multiple': false}}) }}
-                {{ form_errors(form.birthYear, {'attr': {'class': 'text-red-500'}}) }}
+                <span class="text-red-500">{{ form_errors(form.birthYear) }}</span>
             </div>
 
             <div class="mb-4">
                 {{ form_label(form.deathYear) }}
                 {{ form_widget(form.deathYear, {'attr': {'class': 'bg-white mt-1 block w-full border border-gray-300 rounded-md p-2', 'multiple': false}}) }}
-                {{ form_errors(form.deathYear, {'attr': {'class': 'text-red-500'}}) }}
+                <span class="text-red-500">{{ form_errors(form.deathYear) }}</span>
             </div>
             
             <div class="mb-4">
                 {{ form_label(form.nationality) }}
                 {{ form_widget(form.nationality, {'attr': {'class': 'bg-white mt-1 block w-full border border-gray-300 rounded-md p-2'}}) }}
-                {{ form_errors(form.nationality, {'attr': {'class': 'text-red-500'}}) }}
+                <span class="text-red-500">{{ form_errors(form.nationality) }}</span>
             </div>
 
             <div class="mb-4">
                 {{ form_label(form.link) }}
                 {{ form_widget(form.link, {'attr': {'class': 'bg-white mt-1 block w-full border border-gray-300 rounded-md p-2', 'multiple': false}}) }}
-                {{ form_errors(form.link, {'attr': {'class': 'text-red-500'}}) }}
+                <span class="text-red-500">{{ form_errors(form.link) }}</span>
             </div>
 
             <div class="mb-4">
@@ -50,7 +50,7 @@
                 <div style="display: none;"> // to hide the original tags field
                     {{ form_widget(form.tags) }}
                 </div>
-                {{ form_errors(form.tags) }}
+                <span class="text-red-500">{{ form_errors(form.tags) }}</span>
             </div>
 
             <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Ajouter</button>
