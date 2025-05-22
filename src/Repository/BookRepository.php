@@ -25,4 +25,21 @@ class BookRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function findByTags(array $tagIds, $taggableRepository): array
+    {
+        if (empty($tagIds)) {
+            return $this->findAllOrderedByTitle();
+        }
+        $qb = $this->createQueryBuilder('b')
+            ->innerJoin('App\\Entity\\Taggable', 't', 'WITH', 't.entityId = b.id AND t.entityType = :type')
+            ->where('t.tag IN (:tagIds)')
+            ->setParameter('type', 'book')
+            ->setParameter('tagIds', $tagIds)
+            ->groupBy('b.id')
+            ->having('COUNT(DISTINCT t.tag) = :count')
+            ->setParameter('count', count($tagIds))
+            ->orderBy('b.title', 'ASC');
+        return $qb->getQuery()->getResult();
+    }
 }

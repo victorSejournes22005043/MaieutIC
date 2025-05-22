@@ -25,4 +25,21 @@ class ArticleRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function findByTags(array $tagIds, $taggableRepository): array
+    {
+        if (empty($tagIds)) {
+            return $this->findAllOrderedByTitle();
+        }
+        $qb = $this->createQueryBuilder('a')
+            ->innerJoin('App\\Entity\\Taggable', 't', 'WITH', 't.entityId = a.id AND t.entityType = :type')
+            ->where('t.tag IN (:tagIds)')
+            ->setParameter('type', 'article')
+            ->setParameter('tagIds', $tagIds)
+            ->groupBy('a.id')
+            ->having('COUNT(DISTINCT t.tag) = :count')
+            ->setParameter('count', count($tagIds))
+            ->orderBy('a.title', 'ASC');
+        return $qb->getQuery()->getResult();
+    }
 }

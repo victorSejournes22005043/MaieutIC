@@ -141,6 +141,26 @@ if (typeof tagSearchInput === 'undefined') {
                     if (window.renderUserBubbles) window.renderUserBubbles();
                 }
             });
+        {% elseif context == 'book' %}
+        const tagIds = selectedTags.map(t => t.id);
+        const params = new URLSearchParams();
+        tagIds.forEach(id => params.append('tags[]', id));
+        fetch('{{ path('app_book_filter') }}?' + params.toString())
+            .then(r => r.text())
+            .then(html => {
+                const booksGrid = document.getElementById('books-grid');
+                booksGrid.innerHTML = html;
+            });
+        {% elseif context == 'article' %}
+        const tagIds = selectedTags.map(t => t.id);
+        const params = new URLSearchParams();
+        tagIds.forEach(id => params.append('tags[]', id));
+        fetch('{{ path('app_article_filter') }}?' + params.toString())
+            .then(r => r.text())
+            .then(html => {
+                const articlesGrid = document.getElementById('articles-grid');
+                articlesGrid.innerHTML = html;
+            });
         {% else %}
         const tagIds = selectedTags.map(t => t.id);
         const params = new URLSearchParams();

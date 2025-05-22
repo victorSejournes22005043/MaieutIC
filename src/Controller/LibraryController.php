@@ -550,4 +550,34 @@ final class LibraryController extends AbstractController{
             'app' => ['user' => $this->getUser()],
         ]);
     }
+
+    #[Route('/library/book/filter', name: 'app_book_filter', methods: ['GET'])]
+    public function filterBooks(Request $request, BookRepository $bookRepository, TaggableRepository $taggableRepository): Response
+    {
+        $tagIds = $request->query->all('tags');
+        if (empty($tagIds)) {
+            $books = $bookRepository->findAllOrderedByTitle();
+        } else {
+            $books = $bookRepository->findByTags($tagIds, $taggableRepository);
+        }
+        return $this->render('library/_books_grid.html.twig', [
+            'books' => $books,
+            'app' => ['user' => $this->getUser()],
+        ]);
+    }
+
+    #[Route('/library/article/filter', name: 'app_article_filter', methods: ['GET'])]
+    public function filterArticles(Request $request, ArticleRepository $articleRepository, TaggableRepository $taggableRepository): Response
+    {
+        $tagIds = $request->query->all('tags');
+        if (empty($tagIds)) {
+            $articles = $articleRepository->findAllOrderedByTitle();
+        } else {
+            $articles = $articleRepository->findByTags($tagIds, $taggableRepository);
+        }
+        return $this->render('library/_articles_grid.html.twig', [
+            'articles' => $articles,
+            'app' => ['user' => $this->getUser()],
+        ]);
+    }
 }
