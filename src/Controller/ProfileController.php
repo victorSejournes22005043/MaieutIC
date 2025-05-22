@@ -106,122 +106,121 @@ final class ProfileController extends AbstractController{
         ]);
     }
 
-    #[Route('/profile/edit', name: 'app_profile_edit')]
+    #[Route('/profile/edit/{username}', name: 'app_profile_edit')]
     public function edit(
-        Security $security,
+        string $username,
+        UserRepository $userRepository,
         Request $request,
         EntityManagerInterface $entityManager,
         TagRepository $tagRepository,
         UserQuestionsRepository $userQuestionsRepository
-    ): Response
-    {
-        $user = $security->getUser();
+    ): Response {
+        $user = $userRepository->findOneBy(['username' => $username]);
         if (!$user) {
-            return $this->redirectToRoute('app_login');
+            throw $this->createNotFoundException('Utilisateur non trouvé');
         }
-
-        // Questions dynamiques et taggables (mêmes que registration)
+        // Questions classiques
         $dynamicQuestions = [
             'Pourquoi cette thématique de recherche vous intéresse-t-elle ?',
             'Pourquoi avez-vous souhaité être chercheur ?',
-            'Qu\'aimez vous dans la recherche ?',
-            'Quels sont les problèmes de recherche auxquels vous vous intéressez ? *',
-            'Quelles sont les méthodologies de recherche que vous utilisez dans votre domaine d\'étude ? *',
-            'Qu\'est ce qui, d\'après vous, vous a amené(e) à faire de la recherche ?',
-            'Comment vous définirirez vous en tant que chercheur?',
-            'Pensez-vous que ce choix ait un lien avec  un évènement de votre biographie ? (rencontre, auteur, environnement personnel, professionnel ....) et si oui pouvez-vous brièvement le/la décrire ?',
-            'Pouvez-vous nous raconter qu\'est ce qui a motivé le choix  de vos thématiques de recherche ?',
+            'Qu\'aimez-vous dans la recherche ?',
+            'Quels sont les problèmes de recherche auxquels vous vous intéressez ?',
+            'Quelles sont les méthodologies de recherche que vous utilisez dans votre domaine d\'étude ?',
+            'Qu\'est-ce qui, d\'après vous, vous a amené(e) à faire de la recherche ?',
+            'Comment vous définiriez-vous en tant que chercheur ?',
+            'Pensez-vous que ce choix ait un lien avec un évènement de votre biographie ?',
+            'Pouvez-vous nous raconter ce qui a motivé le choix de vos thématiques de recherche ?',
             'Comment vos expériences personnelles ont-elles influencé votre choix de carrière et vos recherches en sciences humaines et sociales ?',
-            'En quelques mots, en tant que chercheur(se) qu\'est ce qui vous anime ?',
-            'Si vous deviez choisir 4 auteurs qui vous ont marquée, quels seraient-ils? *',
-            'Quelle est la phrase ou la citation qui vous représente le mieux ? *',
+            'En quelques mots, en tant que chercheur(se) qu\'est-ce qui vous anime ?',
+            'Si vous deviez choisir 4 auteurs qui vous ont marquée, quels seraient-ils ?',
+            'Quelle est la phrase ou la citation qui vous représente le mieux ?',
         ];
+        // Questions taggables
         $taggableQuestions = [
-            'Quels mot-clés peuvent être reliés à votre projet en cours ? *',
-            'Si vous deviez choisir 5 mots pour vous définir en tant que chercheur (se); quels seraient-ils? *',
+            'Quels mot-clés peuvent être reliés à votre projet en cours ?',
+            'Si vous deviez choisir 5 mots pour vous définir en tant que chercheur(se), quels seraient-ils ?'
         ];
-        $tags = $tagRepository->findAllOrderedByName();
+        $tags = $tagRepository->findAll();
 
-        // Pré-remplir les réponses existantes
-        $userQuestionsData = array_fill(0, count($dynamicQuestions), '');
-        $taggableQuestionsData = array_fill(0, count($taggableQuestions), []);
-
-        foreach ($user->getUserQuestions() as $uq) {
-            if (preg_match('/^Question (\d+)$/', $uq->getQuestion(), $m)) {
-                $idx = (int)$m[1];
-                if (isset($userQuestionsData[$idx])) {
-                    $userQuestionsData[$idx] = $uq->getAnswer();
+        // Pré-remplir les réponses actuelles
+        $userQuestions = $userQuestionsRepository->findAllByUser($user->getId());
+        $userQuestionsData = [];
+        $taggableQuestionsData = [[], []];
+        foreach ($userQuestions as $uq) {
+            if (str_starts_with($uq->getQuestion(), 'Taggable')) {
+                $index = (int) filter_var($uq->getQuestion(), FILTER_SANITIZE_NUMBER_INT);
+                $tag = $tagRepository->findOneBy(['name' => $uq->getAnswer()]);
+                if ($tag) {
+                    $taggableQuestionsData[$index][] = $tag->getId();
                 }
+            } else {
+                $index = (int) filter_var($uq->getQuestion(), FILTER_SANITIZE_NUMBER_INT);
+                $userQuestionsData[$index] = $uq->getAnswer();
             }
-            if (preg_match('/^Taggable Question (\d+)$/', $uq->getQuestion(), $m)) {
-                $idx = (int)$m[1];
-                if (isset($taggableQuestionsData[$idx])) {
-                    $taggableQuestionsData[$idx][] = $tagRepository->findOneBy(['name' => $uq->getAnswer()]);
+        }
+        // Correction : Pré-remplir avec des objets Tag
+        $taggableQuestionsObjects = [[], []];
+        foreach ($taggableQuestionsData as $i => $ids) {
+            foreach ($ids as $tagId) {
+                $tag = $tagRepository->find($tagId);
+                if ($tag) {
+                    $taggableQuestionsObjects[$i][] = $tag;
                 }
             }
         }
-
         $form = $this->createForm(ProfileEditFormType::class, $user, [
             'dynamic_questions' => $dynamicQuestions,
             'taggable_questions' => $taggableQuestions,
             'tags' => $tags,
         ]);
-
         $form->get('userQuestions')->setData($userQuestionsData);
-        $form->get('taggableQuestions')->setData($taggableQuestionsData);
+        $form->get('taggableQuestions')->setData($taggableQuestionsObjects);
 
         $form->handleRequest($request);
-
         if ($form->isSubmitted() && $form->isValid()) {
-            // Mettre à jour les réponses aux questions
-
-            // Réenregistrer les nouvelles réponses
+            // Mettre à jour les infos de base
+            $entityManager->persist($user);
+            // Vider la collection Doctrine pour éviter les doublons en mémoire
+            $user->getUserQuestions()->clear();
+            // Supprimer toutes les anciennes réponses (classiques et taggables)
+            foreach ($userQuestions as $uq) {
+                $entityManager->remove($uq);
+            }
+            $entityManager->flush();
+            // Ajouter les nouvelles réponses
             $questions = $form->get('userQuestions')->getData();
-            foreach ($questions as $index => $questionText) {
-                if (!empty($questionText)) {
-                    $userQuestion = new UserQuestions();
-                    $userQuestion->setUser($user);
-                    $userQuestion->setQuestion('Question ' . $index);
-                    $userQuestion->setAnswer($questionText);
-                    $user->addUserQuestion($userQuestion);
-                    $entityManager->persist($userQuestion);
+            foreach ($questions as $index => $answer) {
+                if (!empty($answer)) {
+                    $uq = new \App\Entity\UserQuestions();
+                    $uq->setUser($user);
+                    $uq->setQuestion('Question ' . $index);
+                    $uq->setAnswer($answer);
+                    $entityManager->persist($uq);
                 }
             }
             $taggableRaw = $form->get('taggableQuestions')->getData() ?? [];
-            foreach ($taggableRaw as $index => $ids) {
-                if (!is_array($ids)) {
-                    $ids = $ids ? [$ids] : [];
+            foreach ($taggableRaw as $index => $tagsArray) {
+                if (!is_array($tagsArray)) {
+                    $tagsArray = $tagsArray ? [$tagsArray] : [];
                 }
-                foreach ($ids as $tagId) {
-                    $tag = $tagRepository->find($tagId);
-                    if ($tag) {
-                        // Vérifier s'il existe déjà une UserQuestions pour ce user, question, answer
-                        $existing = $userQuestionsRepository->findOneBy([
-                            'user' => $user,
-                            'question' => "Taggable Question $index",
-                            'answer' => $tag->getName()
-                        ]);
-                        if (!$existing) {
-                            dd($tag->getName());
-                            $userQuestion = new UserQuestions();
-                            $userQuestion->setUser($user);
-                            $userQuestion->setQuestion("Taggable Question $index");
-                            $userQuestion->setAnswer($tag->getName());
-                            $user->addUserQuestion($userQuestion);
-                            $entityManager->persist($userQuestion);
-                        }
+                $already = [];
+                foreach ($tagsArray as $tag) {
+                    if ($tag && !in_array($tag->getName(), $already, true)) {
+                        $uq = new \App\Entity\UserQuestions();
+                        $uq->setUser($user);
+                        $uq->setQuestion('Taggable Question ' . $index);
+                        $uq->setAnswer($tag->getName());
+                        $entityManager->persist($uq);
+                        $already[] = $tag->getName();
                     }
                 }
             }
-
             $entityManager->flush();
             $this->addFlash('success', 'Profil mis à jour avec succès.');
-            return $this->redirectToRoute('app_profile');
+            return $this->redirectToRoute('app_profile_show', ['username' => $user->getUsername()]);
         }
-
         return $this->render('profile/edit.html.twig', [
-            'editForm' => $form,
-            'user' => $user,
+            'editForm' => $form->createView(),
             'dynamic_questions' => $dynamicQuestions,
             'taggable_questions' => $taggableQuestions,
         ]);
