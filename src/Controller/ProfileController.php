@@ -29,7 +29,7 @@ final class ProfileController extends AbstractController{
         return $this->renderProfile($user);
     }
 
-    #[Route('/profile/{username}', name: 'app_profile_show')]
+    #[Route('/profile/show/{username}', name: 'app_profile_show')]
     public function show(string $username, UserRepository $userRepository): Response
     {
         $user = $userRepository->findOneBy(['username' => $username]);
@@ -93,7 +93,7 @@ final class ProfileController extends AbstractController{
         ]);
     }
 
-    #[Route('/profile/comments', name: 'app_profile_comments')]
+    #[Route('/profile/comments/{username}', name: 'app_profile_comments')]
     public function comments(Security $security, CommentRepository $commentRepository): Response
     {
         $user = $security->getUser();

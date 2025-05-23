@@ -94,14 +94,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     tabs.posts.addEventListener('click', function () {
         setActive('posts');
-        fetch('{{ path("app_profile_posts") }}')
+        fetch('{{ path('app_profile_posts', {username : user.username}) }}')
             .then(r => r.text())
             .then(html => { tabContent.innerHTML = html; });
     });
 
     tabs.comments.addEventListener('click', function () {
         setActive('comments');
-        fetch('{{ path("app_profile_comments") }}')
+        fetch('{{ path('app_profile_comments', {username : user.username}) }}')
             .then(r => r.text())
             .then(html => { tabContent.innerHTML = html; });
     });
