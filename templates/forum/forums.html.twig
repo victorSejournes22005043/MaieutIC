@@ -79,11 +79,11 @@
                     <div class="flex flex-row items-center w-full my-2">
                         <a class="flex flex-col items-center text-gray-500 w-8 mx-2">
                             {% if userLikes[comment.id] %}
-                                <button class="text-red-500 text-lg" onclick="likeComment({{ comment.id }})">♥</button>
+                                <button id="like-btn-{{ comment.id }}" class="text-red-500 text-lg" onclick="likeComment({{ comment.id }})">♥</button>
                             {% else %}
-                                <button class="text-gray-500 text-lg" onclick="likeComment({{ comment.id }})">♡</button>
+                                <button id="like-btn-{{ comment.id }}" class="text-gray-500 text-lg" onclick="likeComment({{ comment.id }})">♡</button>
                             {% endif %}
-                            <p>{{ likes[i] }}</p>
+                            <p id="like-count-{{ comment.id }}">{{ likes[i] }}</p>
                         </a>
                         <div class="bg-white text-gray-700 p-3 rounded-lg w-full">
                             <p><strong>{{ comment.user.firstName }} {{ comment.user.lastName }}</strong></p>
@@ -171,7 +171,26 @@
         });
     })();
 
-    function likeComment(id, like) {
+    function likeComment(id) {
+        const btn = document.getElementById('like-btn-' + id);
+        const count = document.getElementById('like-count-' + id);
+        if (!btn || !count) return;
+        // État initial
+        const wasLiked = btn.textContent === '♥';
+        let currentCount = parseInt(count.textContent, 10) || 0;
+        // Optimiste : on change tout de suite
+        if (wasLiked) {
+            btn.textContent = '♡';
+            btn.classList.remove('text-red-500');
+            btn.classList.add('text-gray-500');
+            count.textContent = Math.max(0, currentCount - 1);
+        } else {
+            btn.textContent = '♥';
+            btn.classList.remove('text-gray-500');
+            btn.classList.add('text-red-500');
+            count.textContent = currentCount + 1;
+        }
+        // On envoie la requête
         fetch(`/like/${id}`, {
             method: 'POST',
             headers: {
@@ -180,9 +199,40 @@
         })
         .then(response => response.json())
         .then(data => {
-            location.reload();
+            if (data.error) {
+                // On restaure l'état initial si erreur
+                if (wasLiked) {
+                    btn.textContent = '♥';
+                    btn.classList.remove('text-gray-500');
+                    btn.classList.add('text-red-500');
+                    count.textContent = currentCount;
+                } else {
+                    btn.textContent = '♡';
+                    btn.classList.remove('text-red-500');
+                    btn.classList.add('text-gray-500');
+                    count.textContent = currentCount;
+                }
+                return;
+            }
+            // On synchronise avec la valeur serveur si besoin
+            fetch(`/forums/comments/${id}/likes`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(r => r.json())
+                .then(j => { if (j.count !== undefined) count.textContent = j.count; });
         })
-        .catch(error => console.error('Error:', error));
+        .catch(() => {
+            // En cas d'erreur réseau, on restaure l'état initial
+            if (wasLiked) {
+                btn.textContent = '♥';
+                btn.classList.remove('text-gray-500');
+                btn.classList.add('text-red-500');
+                count.textContent = currentCount;
+            } else {
+                btn.textContent = '♡';
+                btn.classList.remove('text-red-500');
+                btn.classList.add('text-gray-500');
+                count.textContent = currentCount;
+            }
+        });
     }
 
     function openPostCreateModal() {

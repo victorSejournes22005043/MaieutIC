@@ -287,4 +287,16 @@ class ForumController extends AbstractController
             'likes' => $likes,
         ]);
     }
+
+    #[Route('/forums/comments/{id}/likes', name: 'app_comment_likes_count', methods: ['GET'])]
+    public function getCommentLikesCount(
+        ?Comment $comment,
+        UserLikeRepository $userLikeRepository
+    ): Response {
+        if (!$comment) {
+            return $this->json(['error' => 'Comment not found'], 404);
+        }
+        $count = $userLikeRepository->countByCommentId($comment->getId());
+        return $this->json(['count' => $count]);
+    }
 }
