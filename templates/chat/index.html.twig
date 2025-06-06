@@ -9,27 +9,27 @@
 {{ render(controller('App\\Controller\\NavbarController::navbar')) }}
 
 {# Main container: flex-col, min-h-screen #}
-<div class="flex-1 flex flex-row justify-center w-full text-gray-700">
+<div class="flex-1 flex flex-row justify-center w-full text-gray-700 min-h-0 max-h-[calc(100vh-80px)]">
 
     {# chat nav #}
-    <div class="bg-white mx-3 my-6 h-auto rounded-lg p-4 w-52 shadow-xl">
+    <div class="bg-white mx-3 my-6 min-h-0 rounded-lg p-4 w-52 shadow-xl">
         <div class="inline-block">
             <h2 class="text-2xl">Salons</h2>
-            <div class="bg-blue-600 h-1 rounded-full my-1 w-full"></div>
+            {# <div class="bg-blue-600 h-1 rounded-full my-1 w-full"></div> #}
         </div>
-        <div>
-            <a href="{{ path('app_chat_global') }}"># General</a>
+        <div class="flex flex-col ml-2 mb-2">
+            <a href="{{ path('app_chat_global') }}" class="p-1 w-full hover:bg-blue-50 hover:text-blue-900"># General</a>
         </div>
 
         <div class="inline-block">
             <h2 class="text-2xl">Conversations</h2>
-            <div class="bg-blue-600 h-1 rounded-full my-1 w-full"></div>
+            {# <div class="bg-blue-600 h-1 rounded-full my-1 w-full"></div> #}
         </div>
-        <div>
+        <div class="ml-2 mb-2">
             {% for conversation in conversations %}
                 {% set other = conversation.user1 == app.user ? conversation.user2 : conversation.user1 %}
                 <li class="py-4 flex items-center justify-between">
-                    <a href="{{ path('private_conversation', {id: conversation.id}) }}" class="flex items-center gap-3">
+                    <a href="{{ path('private_conversation', {id: conversation.id}) }}" class="flex items-center gap-3 p-1 w-full hover:bg-blue-50 hover:text-blue-900">
                         <img src="{{ asset('profile_images/' ~ (other.profileImage ?: 'default-profile.png')) }}" class="w-10 h-10 rounded-full object-cover" alt="">
                         <span class="font-semibold">{{ other.username }}</span>
                     </a>
@@ -41,14 +41,14 @@
     </div>
 
     {# chat wrapper #}
-    <div class="bg-white flex flex-col shadow-xl p-2 rounded-lg max-w-5xl w-full flex-1 mx-3 my-6">
+    <div class="bg-white flex flex-col shadow-xl p-2 rounded-lg max-w-5xl w-full flex-1 mx-3 my-6 min-h-0">
 
         {% if conversation is defined %}
             {# chat header #}
-            <h1 class="text-2xl font-bold mb-6">Conversation avec {% set other = conversation.user1 == app.user ? conversation.user2 : conversation.user1 %}{{ other.username }}</h1>
+            <h1 class="text-xl font-medium mb-6 ml-2">Conversation avec {% set other = conversation.user1 == app.user ? conversation.user2 : conversation.user1 %}{{ other.username }}</h1>
 
             {# chat messages #}
-            <div id="chat-messages" class="flex-1 border-2 overflow-y-auto mb-2 min-h-0">
+            <div id="chat-messages" class="flex-1 overflow-auto mb-2 min-h-0">
                 {% for message in messages %}
                     <div class="flex {{ message.sender == app.user ? 'justify-end' : 'justify-start' }}">
                         <div class="max-w-xs px-4 py-2 rounded-lg {{ message.sender == app.user ? 'bg-blue-100 text-right' : 'bg-gray-100' }}">
@@ -68,10 +68,10 @@
             </form>
         {% else %}
             {# chat header #}
-            <h1>Live Chat</h1>
+            <h1 class="flex flex-col ml-2 mb-2">Live Chat</h1>
 
             {# chat messages #}
-            <div id="chat-messages" class="flex-1 border-2 overflow-y-auto mb-2 min-h-0">
+            <div id="chat-messages" class="flex-1 overflow-y-scroll min-h-0 mb-2">
                 {# Messages will be loaded here #}
             </div>
 
