@@ -1,90 +1,215 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}Chat{% endblock %}
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('styles/app.css') }}">
+{% endblock %}
 
 {% block body %}
-<style>
-    .chat-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .chat-messages { border: 1px solid #ccc; padding: 1em; height: 300px; overflow-y: scroll; margin-bottom: 1em; }
-    .chat-form { display: flex; gap: 0.5em; }
-    .chat-form input[type="text"] { flex: 1; }
-</style>
+{{ render(controller('App\\Controller\\NavbarController::navbar')) }}
 
-<div class="chat-wrapper">
-    <h1>Live Chat</h1>
+{# Main container: flex-col, min-h-screen #}
+<div class="flex-1 flex flex-row justify-center w-full text-gray-700 min-h-0 max-h-[calc(100vh-80px)]">
 
-    <div id="chat-messages" class="chat-messages">
-        <!-- Messages will be loaded here -->
+    {# chat nav #}
+    <div class="bg-white mx-3 my-6 min-h-0 rounded-lg p-4 w-52 shadow-xl">
+        <div class="inline-block">
+            <h2 class="text-2xl">Salons</h2>
+            {# <div class="bg-blue-600 h-1 rounded-full my-1 w-full"></div> #}
+        </div>
+        <div class="flex flex-col ml-2 mb-2">
+            <a href="{{ path('app_chat_global') }}" class="p-1 w-full hover:bg-blue-50 hover:text-blue-900"># General</a>
+        </div>
+
+        <div class="inline-block">
+            <h2 class="text-2xl">Conversations</h2>
+            {# <div class="bg-blue-600 h-1 rounded-full my-1 w-full"></div> #}
+        </div>
+        <div class="ml-2 mb-2">
+            {% for conversation in conversations %}
+                {% set other = conversation.user1 == app.user ? conversation.user2 : conversation.user1 %}
+                <li class="py-4 flex items-center justify-between">
+                    <a href="{{ path('private_conversation', {id: conversation.id}) }}" class="flex items-center gap-3 p-1 w-full hover:bg-blue-50 hover:text-blue-900">
+                        <img src="{{ asset('profile_images/' ~ (other.profileImage ?: 'default-profile.png')) }}" class="w-10 h-10 rounded-full object-cover" alt="">
+                        <span class="font-semibold">{{ other.username }}</span>
+                    </a>
+                </li>
+            {% else %}
+                <li class="py-4 text-gray-500">Aucune conversation.</li>
+            {% endfor %}
+        </div>
     </div>
 
-    <form id="chat-form" class="chat-form">
-        <input type="text" id="message" placeholder="Type your message..." required>
-        <button type="submit">Send</button>
-    </form>
+    {# chat wrapper #}
+    <div class="bg-white flex flex-col shadow-xl p-2 rounded-lg max-w-5xl w-full flex-1 mx-3 my-6 min-h-0">
+
+        {% if conversation is defined %}
+            {# chat header #}
+            <h1 class="text-xl font-medium mb-6 ml-2">Conversation avec {% set other = conversation.user1 == app.user ? conversation.user2 : conversation.user1 %}{{ other.username }}</h1>
+
+            {# chat messages #}
+            <div id="chat-messages" class="flex-1 overflow-auto mb-2 min-h-0">
+                {% for message in messages %}
+                    <div class="flex {{ message.sender == app.user ? 'justify-end' : 'justify-start' }}">
+                        <div class="max-w-xs px-4 py-2 rounded-lg {{ message.sender == app.user ? 'bg-blue-100 text-right' : 'bg-gray-100' }}">
+                            <div class="text-sm font-semibold">{{ message.sender.username }}</div>
+                            <div>{{ message.content }}</div>
+                            <div class="text-xs text-gray-400 mt-1">{{ message.sentAt|date('d/m/Y H:i') }}</div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="text-gray-500">Aucun message.</div>
+                {% endfor %}
+            </div>
+
+            <form method="post" action="{{ path('private_message_send', {id: conversation.id}) }}" class="flex gap-2">
+                <input type="text" name="content" class="flex-1 border rounded px-3 py-2" placeholder="Votre message..." required>
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Envoyer</button>
+            </form>
+        {% else %}
+            {# chat header #}
+            <h1 class="flex flex-col ml-2 mb-2">Live Chat</h1>
+
+            {# chat messages #}
+            <div id="chat-messages" class="flex-1 overflow-y-scroll min-h-0 mb-2">
+                {# Messages will be loaded here #}
+            </div>
+
+            <form id="chat-form" class="flex gap-2">
+                <input type="text" id="message" placeholder="Type your message..." required class="flex-1 px-2 py-1 rounded border">
+                <button type="submit" class="px-4 py-1 rounded text-white bg-blue-600">Envoyer</button>
+            </form>
+        {% endif %}
+    </div>
 </div>
 
 <script>
-    const chatMessages = document.getElementById('chat-messages');
-    const chatForm = document.getElementById('chat-form');
-    const messageInput = document.getElementById('message');
-    let sending = false;
+    {% if conversation is defined %}
+        (function() {
+            let pollingStarted = false;
+            function startPrivateMessagePolling() {
+                if (pollingStarted) return;
+                pollingStarted = true;
+                const messagesContainer = document.querySelector('.bg-white.rounded-lg.shadow.p-4.mb-6');
+                const form = document.querySelector('form[action*="/send"]');
+                const input = form ? form.querySelector('input[name="content"]') : null;
+                let lastHtml = '';
+                let sending = false;
+                function fetchMessages(scroll = false) {
+                    fetch(window.location.pathname.replace(/\/$/, '') + '/ajax')
+                        .then(r => r.text())
+                        .then(html => {
+                            if (messagesContainer && html !== lastHtml) {
+                                messagesContainer.innerHTML = html;
+                                if (scroll || lastHtml === '') messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                                lastHtml = html;
+                            }
+                        })
+                        .catch(() => {
+                            if (messagesContainer) messagesContainer.innerHTML = '<div class="text-red-500">Erreur de chargement des messages.</div>';
+                        });
+                }
+                setInterval(() => { fetchMessages(); }, 2000);
+                if (form && input) {
+                    form.addEventListener('submit', function (e) {
+                        e.preventDefault();
+                        if (sending) return;
+                        sending = true;
+                        form.querySelector('button[type="submit"]').disabled = true;
+                        const data = new FormData(form);
+                        fetch(form.action, {
+                            method: 'POST',
+                            body: data
+                        })
+                        .then(resp => {
+                            if (!resp.ok) throw new Error('Erreur lors de l\'envoi');
+                            fetchMessages(true);
+                            input.value = '';
+                        })
+                        .catch(() => {
+                            alert('Erreur lors de l\'envoi du message');
+                        })
+                        .finally(() => {
+                            sending = false;
+                            form.querySelector('button[type="submit"]').disabled = false;
+                        });
+                    });
+                }
+                // Scroll en bas au chargement
+                if (messagesContainer) messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                // Premier fetch immédiat
+                fetchMessages(true);
+            }
+            if (window.Turbo) {
+                document.addEventListener('turbo:load', startPrivateMessagePolling);
+            } else {
+                document.addEventListener('DOMContentLoaded', startPrivateMessagePolling);
+            }
+        })();
+    {% else %}
+    
+        const chatMessages = document.getElementById('chat-messages');
+        const chatForm = document.getElementById('chat-form');
+        const messageInput = document.getElementById('message');
+        let sending = false;
 
-    // Function to fetch messages
-    async function fetchMessages() {
-        try {
-            const response = await fetch('/chat/messages');
-            if (!response.ok) throw new Error('Failed to fetch messages');
-            const messages = await response.json();
-            chatMessages.innerHTML = messages.map(msg => `<p><strong>${msg.user}:</strong> ${msg.text}</p>`).join('');
-        } catch (error) {
-            console.error('Error fetching messages:', error);
-            chatMessages.innerHTML = '<p style="color: red;">Error loading messages. Check console for details.</p>';
+        // Function to fetch messages
+        async function fetchMessages() {
+            try {
+                const response = await fetch('/chat/global/messages');
+                if (!response.ok) throw new Error('Failed to fetch messages');
+                const messages = await response.json();
+                chatMessages.innerHTML = messages.map(msg => `<p><strong>${msg.user}:</strong> ${msg.text}</p>`).join('');
+            } catch (error) {
+                console.error('Error fetching messages:', error);
+                chatMessages.innerHTML = '<p style="color: red;">Error loading messages. Check console for details.</p>';
+            }
         }
-    }
+ 
+        // Function to send a message
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (sending) return;
+            sending = true;
+            chatForm.querySelector('button[type="submit"]').disabled = true;
+            const message = messageInput.value.trim();
 
-    // Function to send a message
-    chatForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        if (sending) return;
-        sending = true;
-        chatForm.querySelector('button[type="submit"]').disabled = true;
-        const message = messageInput.value.trim();
-
-        if (!message) {
-            alert('Message cannot be empty');
-            sending = false;
-            chatForm.querySelector('button[type="submit"]').disabled = false;
-            return;
-        }
-
-        try {
-            const response = await fetch('/chat/send', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: message })
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error('Error sending message:', errorData);
-                alert(errorData.error || 'Failed to send message');
+            if (!message) {
+                alert('Message cannot be empty');
                 sending = false;
                 chatForm.querySelector('button[type="submit"]').disabled = false;
                 return;
             }
 
-            messageInput.value = '';
-            fetchMessages();
-        } catch (error) {
-            console.error('Error sending message:', error);
-            alert('An error occurred while sending the message');
-        }
-        sending = false;
-        chatForm.querySelector('button[type="submit"]').disabled = false;
-    });
+            try {
+                const response = await fetch('/chat/global/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: message })
+                });
 
-    // Fetch messages every 2 seconds
-    setInterval(fetchMessages, 2000);
-    fetchMessages();
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('Error sending message:', errorData);
+                    alert(errorData.error || 'Failed to send message');
+                    sending = false;
+                    chatForm.querySelector('button[type="submit"]').disabled = false;
+                    return;
+                }
+
+                messageInput.value = '';
+                fetchMessages();
+            } catch (error) {
+                console.error('Error sending message:', error);
+                alert('An error occurred while sending the message');
+            }
+            sending = false;
+            chatForm.querySelector('button[type="submit"]').disabled = false;
+        });
+
+        // Fetch messages every 2 seconds
+        setInterval(fetchMessages, 2000);
+        fetchMessages();
+    {% endif %}
 </script>
 {% endblock %}

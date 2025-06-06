@@ -19,7 +19,7 @@
             <div id="popup-progress" style="position:absolute; left:0; bottom:0; height:4px; background:#f87171; width:100%; transition:width 0.1s linear;"></div>
         </div>
 
-        <div class="flex flex-col items-center max-w-7xl mx-auto my-10">
+        <div class="flex-1 flex flex-col items-center max-w-7xl mx-auto my-10">
             <h1 class="mt-6 text-center text-4xl font-black text-gray-900 tracking-tight">MaieutIC</h1>
             <p class="mt-2 text-center text-gray-600">La plateforme facilitant l’échange entre doctorants !</p>
             <ul class="flex flex-wrap justify-center my-5">
@@ -98,7 +98,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="{{ path('app_chat') }}" class="relative block group">
+                    <a href="{{ path('app_chat_global') }}" class="relative block group">
                         <img src="{{ asset('images/discussion.jpg') }}" alt="discussion" class="max-h-64 m-3 rounded-lg shadow-xl shadow-black/40 brightness-50 transition-all duration-200 group-hover:brightness-100"/>
                         <div class="absolute bottom-5 left-9 text-white transition-opacity duration-200 group-hover:opacity-0">
                             <div class="text-xl font-bold">Discussions</div>
@@ -106,7 +106,7 @@
                         </div>
                     </a>
                 </li>
-                {% if app.user and app.user.usertype == 1 %}
+                {# {% if app.user and app.user.usertype == 1 %}
                 <li>
                     <a href="{{ path('private_messages') }}" class="relative block group">
                         <img src="{{ asset('images/discussion.jpg') }}" alt="discussion" class="max-h-64 m-3 rounded-lg shadow-xl shadow-black/40 brightness-50 transition-all duration-200 group-hover:brightness-100"/>
@@ -116,7 +116,7 @@
                         </div>
                     </a>
                 </li>
-                {% endif %}
+                {% endif %} #}
                 {% if app.user and app.user.usertype == 1 %}
                 <li>
                     <a href="{{ path('app_admin_interface') }}" class="relative block group">
