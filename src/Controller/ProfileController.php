@@ -158,6 +158,20 @@ final class ProfileController extends AbstractController{
                 $userQuestionsData[$index] = $uq->getAnswer();
             }
         }
+        // S'assurer que toutes les questions sont présentes (même sans réponse)
+        foreach ($dynamicQuestions as $i => $q) {
+            if (!array_key_exists($i, $userQuestionsData)) {
+                $userQuestionsData[$i] = '';
+            }
+        }
+        foreach ($taggableQuestions as $i => $q) {
+            if (!array_key_exists($i, $taggableQuestionsData)) {
+                $taggableQuestionsData[$i] = [];
+            }
+        }
+        // Trier les questions pour garantir l'ordre
+        ksort($userQuestionsData);
+        ksort($taggableQuestionsData);
         // Correction : Pré-remplir avec des objets Tag
         $taggableQuestionsObjects = [[], []];
         foreach ($taggableQuestionsData as $i => $ids) {
@@ -178,6 +192,22 @@ final class ProfileController extends AbstractController{
 
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
+            // Gestion de l'upload de la photo de profil
+            $profileImageFile = $form->get('profileImageFile')->getData();
+            if ($profileImageFile) {
+                $originalFilename = pathinfo($profileImageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = (new \Symfony\Component\String\Slugger\AsciiSlugger())->slug($originalFilename);
+                $newFilename = $safeFilename.'-'.uniqid().'.'.$profileImageFile->guessExtension();
+                try {
+                    $profileImageFile->move(
+                        $this->getParameter('kernel.project_dir').'/public/profile_images',
+                        $newFilename
+                    );
+                } catch (\Exception $e) {
+                    $this->addFlash('danger', "Erreur lors de l'upload de la photo de profil.");
+                }
+                $user->setProfileImage($newFilename);
+            }
             // Mettre à jour les infos de base
             $entityManager->persist($user);
             // Vider la collection Doctrine pour éviter les doublons en mémoire
