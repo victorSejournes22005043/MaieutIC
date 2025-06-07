@@ -97,26 +97,27 @@
                         </div>
                     </a>
                 </li>
-                <li>
-                    <a href="{{ path('app_chat_global') }}" class="relative block group">
-                        <img src="{{ asset('images/discussion.jpg') }}" alt="discussion" class="max-h-64 m-3 rounded-lg shadow-xl shadow-black/40 brightness-50 transition-all duration-200 group-hover:brightness-100"/>
-                        <div class="absolute bottom-5 left-9 text-white transition-opacity duration-200 group-hover:opacity-0">
-                            <div class="text-xl font-bold">Discussions</div>
-                            <div>Messagerie</div>
-                        </div>
-                    </a>
-                </li>
-                {# {% if app.user and app.user.usertype == 1 %}
-                <li>
-                    <a href="{{ path('private_messages') }}" class="relative block group">
-                        <img src="{{ asset('images/discussion.jpg') }}" alt="discussion" class="max-h-64 m-3 rounded-lg shadow-xl shadow-black/40 brightness-50 transition-all duration-200 group-hover:brightness-100"/>
-                        <div class="absolute bottom-5 left-9 text-white transition-opacity duration-200 group-hover:opacity-0">
-                            <div class="text-xl font-bold">Messagerie privée</div>
-                            <div>Messages directs</div>
-                        </div>
-                    </a>
-                </li>
-                {% endif %} #}
+                {% if app.user%}
+                    <li>
+                        <a href="{{ path('app_chat_global') }}" class="relative block group">
+                            <img src="{{ asset('images/discussion.jpg') }}" alt="discussion" class="max-h-64 m-3 rounded-lg shadow-xl shadow-black/40 brightness-50 transition-all duration-200 group-hover:brightness-100"/>
+                            <div class="absolute bottom-5 left-9 text-white transition-opacity duration-200 group-hover:opacity-0">
+                                <div class="text-xl font-bold">Discussions</div>
+                                <div>Messagerie</div>
+                            </div>
+                        </a>
+                    </li>
+                {% else %}
+                    <li>
+                        <a href="{{ path('app_login') }}" class="relative block group">
+                            <img src="{{ asset('images/discussion.jpg') }}" alt="discussion" class="max-h-64 m-3 rounded-lg shadow-xl shadow-black/40 brightness-50 transition-all duration-200 group-hover:brightness-100"/>
+                            <div class="absolute bottom-5 left-9 text-white transition-opacity duration-200 group-hover:opacity-0">
+                                <div class="text-xl font-bold">Discussions</div>
+                                <div>Messagerie</div>
+                            </div>
+                        </a>
+                    </li>
+                {% endif %}
                 {% if app.user and app.user.usertype == 1 %}
                 <li>
                     <a href="{{ path('app_admin_interface') }}" class="relative block group">

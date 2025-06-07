@@ -48,13 +48,18 @@
             <h1 class="text-xl font-medium mb-6 ml-2">Conversation avec {% set other = conversation.user1 == app.user ? conversation.user2 : conversation.user1 %}{{ other.username }}</h1>
 
             {# chat messages #}
-            <div id="chat-messages" class="flex-1 overflow-auto mb-2 min-h-0">
+            <div id="private-chat-messages" class="flex-1 overflow-auto mb-2 min-h-0">
                 {% for message in messages %}
-                    <div class="flex {{ message.sender == app.user ? 'justify-end' : 'justify-start' }}">
-                        <div class="max-w-xs px-4 py-2 rounded-lg {{ message.sender == app.user ? 'bg-blue-100 text-right' : 'bg-gray-100' }}">
-                            <div class="text-sm font-semibold">{{ message.sender.username }}</div>
-                            <div>{{ message.content }}</div>
-                            <div class="text-xs text-gray-400 mt-1">{{ message.sentAt|date('d/m/Y H:i') }}</div>
+                    <div class="flex justify-start mb-4">
+                        <div class="px-4 py-2">
+                            <div class="flex flex-row items-center">
+                                <a href="{{ path('app_profile', {'username': message.sender.username}) }}" class="flex flex-row items-center mr-3">
+                                    <img src="{% if message.sender.profileImage %}{{ asset('profile_images/' ~ message.sender.profileImage) }}{% else %}{{ asset('images/default-profile.png') }}{% endif %}" alt="Profil" class="w-10 h-10 mr-3 rounded-full">
+                                    <div class="text-sm font-semibold">{{ message.sender.username }}</div>
+                                </a>
+                                <div class="text-xs text-gray-400 mt-1">{{ message.sentAt|date('d/m/Y H:i') }}</div>
+                            </div>
+                            <div class="ml-[52px]">{{ message.content }}</div>            
                         </div>
                     </div>
                 {% else %}
@@ -84,17 +89,19 @@
 </div>
 
 <script>
+    if (typeof sending === 'undefined') {
+        var sending = false;
+    }
     {% if conversation is defined %}
         (function() {
             let pollingStarted = false;
             function startPrivateMessagePolling() {
                 if (pollingStarted) return;
                 pollingStarted = true;
-                const messagesContainer = document.querySelector('.bg-white.rounded-lg.shadow.p-4.mb-6');
+                const messagesContainer = document.getElementById('private-chat-messages');;
                 const form = document.querySelector('form[action*="/send"]');
                 const input = form ? form.querySelector('input[name="content"]') : null;
                 let lastHtml = '';
-                let sending = false;
                 function fetchMessages(scroll = false) {
                     fetch(window.location.pathname.replace(/\/$/, '') + '/ajax')
                         .then(r => r.text())
@@ -147,69 +154,87 @@
             }
         })();
     {% else %}
-    
-        const chatMessages = document.getElementById('chat-messages');
-        const chatForm = document.getElementById('chat-form');
-        const messageInput = document.getElementById('message');
-        let sending = false;
 
-        // Function to fetch messages
-        async function fetchMessages() {
-            try {
-                const response = await fetch('/chat/global/messages');
-                if (!response.ok) throw new Error('Failed to fetch messages');
-                const messages = await response.json();
-                chatMessages.innerHTML = messages.map(msg => `<p><strong>${msg.user}:</strong> ${msg.text}</p>`).join('');
-            } catch (error) {
-                console.error('Error fetching messages:', error);
-                chatMessages.innerHTML = '<p style="color: red;">Error loading messages. Check console for details.</p>';
-            }
+        if (typeof chatMessages === 'undefined') {
+            const chatMessages = document.getElementById('chat-messages');
+            const chatForm = document.getElementById('chat-form');
+            const messageInput = document.getElementById('message');
         }
- 
-        // Function to send a message
-        chatForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (sending) return;
-            sending = true;
-            chatForm.querySelector('button[type="submit"]').disabled = true;
-            const message = messageInput.value.trim();
 
-            if (!message) {
-                alert('Message cannot be empty');
-                sending = false;
-                chatForm.querySelector('button[type="submit"]').disabled = false;
-                return;
+        if (chatMessages && chatForm && messageInput) {
+            // Function to fetch messages
+            async function fetchMessages() {
+                try {
+                    const response = await fetch('/chat/global/messages');
+                    if (!response.ok) throw new Error('Failed to fetch messages');
+                    const messages = await response.json();
+                    chatMessages.innerHTML = messages.length
+                        ? messages.map(msg => `
+                            <div class="flex justify-start mb-4">
+                                <div class="px-4 py-2">
+                                    <div class="flex flex-row items-center">
+                                        <a href="/profile/${encodeURIComponent(msg.sender.username)}" class="flex flex-row items-center mr-3">
+                                            <img src="${msg.sender.profileImage ? '/profile_images/' + msg.sender.profileImage : '/images/default-profile.png'}" alt="Profil" class="w-10 h-10 mr-3 rounded-full">
+                                            <div class="text-sm font-semibold">${msg.sender.username}</div>
+                                        </a>
+                                        <div class="text-xs text-gray-400 mt-1">${msg.sentAt}</div>
+                                    </div>
+                                    <div class="ml-[52px]">${msg.content}</div>
+                                </div>
+                            </div>
+                        `).join('')
+                        : '<div class="text-gray-500">Aucun message.</div>';
+                } catch (error) {
+                    console.error('Error fetching messages:', error);
+                    chatMessages.innerHTML = '<p style="color: red;">Error loading messages. Check console for details.</p>';
+                }
             }
 
-            try {
-                const response = await fetch('/chat/global/send', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ text: message })
-                });
+            // Function to send a message
+            chatForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (sending) return;
+                sending = true;
+                chatForm.querySelector('button[type="submit"]').disabled = true;
+                const message = messageInput.value.trim();
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    console.error('Error sending message:', errorData);
-                    alert(errorData.error || 'Failed to send message');
+                if (!message) {
+                    alert('Message cannot be empty');
                     sending = false;
                     chatForm.querySelector('button[type="submit"]').disabled = false;
                     return;
                 }
 
-                messageInput.value = '';
-                fetchMessages();
-            } catch (error) {
-                console.error('Error sending message:', error);
-                alert('An error occurred while sending the message');
-            }
-            sending = false;
-            chatForm.querySelector('button[type="submit"]').disabled = false;
-        });
+                try {
+                    const response = await fetch('/chat/global/send', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ text: message })
+                    });
 
-        // Fetch messages every 2 seconds
-        setInterval(fetchMessages, 2000);
-        fetchMessages();
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        console.error('Error sending message:', errorData);
+                        alert(errorData.error || 'Failed to send message');
+                        sending = false;
+                        chatForm.querySelector('button[type="submit"]').disabled = false;
+                        return;
+                    }
+
+                    messageInput.value = '';
+                    fetchMessages();
+                } catch (error) {
+                    console.error('Error sending message:', error);
+                    alert('An error occurred while sending the message');
+                }
+                sending = false;
+                chatForm.querySelector('button[type="submit"]').disabled = false;
+            });
+
+            // Fetch messages every 2 seconds
+            setInterval(fetchMessages, 2000);
+            fetchMessages();
+        }
     {% endif %}
 </script>
 {% endblock %}

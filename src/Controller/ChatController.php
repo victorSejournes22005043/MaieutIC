@@ -39,10 +39,17 @@ final class ChatController extends AbstractController{
     public function getMessages(MessageRepository $messageRepository): JsonResponse
     {
         $messages = $messageRepository->findBy(['conversation' => null], ['sentAt' => 'ASC']);
-        $data = array_map(fn(Message $msg) => [
-            'user' => $msg->getSender()->getUsername(),
-            'text' => $msg->getContent(),
-        ], $messages);
+        $data = array_map(function(Message $msg) {
+            $sender = $msg->getSender();
+            return [
+                'sender' => [
+                    'username' => $sender->getUsername(),
+                    'profileImage' => $sender->getProfileImage(), // null si pas d'image
+                ],
+                'sentAt' => $msg->getSentAt() ? $msg->getSentAt()->format('d/m/Y H:i') : '',
+                'content' => $msg->getContent(),
+            ];
+        }, $messages);
         return new JsonResponse($data);
     }
 
