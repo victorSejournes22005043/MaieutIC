@@ -22,6 +22,10 @@ final class ChatController extends AbstractController{
     public function showGlobalChat(ConversationRepository $conversationRepo): Response
     {
         $user = $this->getUser();
+
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
         
         $conversations = $conversationRepo->createQueryBuilder('c')
             ->where('c.user1 = :user OR c.user2 = :user')
